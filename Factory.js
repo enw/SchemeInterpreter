@@ -1,8 +1,3 @@
-console.log('test of Factory design pattern...');
-
-function Exception() {
-    
-}
 function Factory() {
     // @bool Boolean - initial value, MS between emission
     function TogglingBooleanEmitter (initObj) {
@@ -60,7 +55,8 @@ function Factory() {
         return types;
     }
 }
-
+module.exports = Factory;
+/*
 var myFactory = new Factory();
 var tbe = myFactory.makeObject("TogglingBooleanEmitter", {ms:10000});
 console.log("TogglingBooleanEmitter", tbe);
@@ -82,3 +78,4 @@ console.log("p",p.getName());
 var p2 = myFactory.makeObject("Person");
 console.log("p2",p2);
 console.log("p2",p2.getName());
+*/
