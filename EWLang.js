@@ -55,7 +55,7 @@ function EWLang () {
     
     // create parse tree
     this.parse = function ( tokenList ) {
-        
+        return tokenList;
     };  // parse
 
     // environment in which to evaluate fxn
@@ -65,12 +65,11 @@ function EWLang () {
 
     // evaluate a parse tree
     this.eval = function ( fxn, environment ) {
-        
     }; // eval
 
     // lex, parse, eval
     this.interpret = function ( lispString ) {
-        this.eval ( this.parse ( this.lex( s ) ), new Environment );
+        return this.parse ( this.lex( lispString ) );
     }; // interpret
 }
 
@@ -79,4 +78,4 @@ module.exports = EWLang;
 
 
 var tok = new EWLang;
-console.log("parsed raw input into operators, numbers & identifiers\n", tok.lex("(+ 1 (* 2 3))"));
+console.log("parsed raw input into operators, numbers & identifiers\n", tok.interpret("(+ 1 (* 2 3))"));
