@@ -1,6 +1,4 @@
-// maybe use regex instead of old-school javascript string.indexOf()...
-
-function Tokenizer () {
+function EWLang () {
     var whitespace = "\n\r\t\m ";
     function isWhitespace (char) {
         return whitespace.indexOf(char) != -1;
@@ -11,9 +9,9 @@ function Tokenizer () {
         return digits.indexOf(char) != -1;
     }
 
-    var operators = "()";
-    function isOperator ( char ) {
-        return operators.indexOf(char) != -1;
+    var parens = "()";
+    function isParen ( char ) {
+        return parens.indexOf(char) != -1;
     }
 
     var chars="~!@#$%^&*_+-=abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ\][|}{';:/.,?><\"";
@@ -21,8 +19,8 @@ function Tokenizer () {
         return chars.indexOf(char) != -1;
     }
 
-    // returns string of tokens
-    this.parse = function (input) {
+    // returns list of tokens
+    this.lex = function (input) {
         var c, i=0, tokens = [];
         function advance () {
             return c=input[++i];
@@ -31,12 +29,12 @@ function Tokenizer () {
             tokens.push({type:type, value:value});
         }
 
-        // do magic
+        // create list of tokens
         while (i<input.length) {
             c=input[i];
             if (isWhitespace(c)) advance();
-            else if (isOperator(c)) {
-                addToken("operator", c);
+            else if (isParen(c)) {
+                addToken("paren", c);
                 advance();
             } else if (isDigit(c)) {
                 var num = c;
@@ -49,18 +47,36 @@ function Tokenizer () {
             } else if (isChar(c)) {
                 var idn = c;
                 while (isChar(advance())) idn += c;
-                addToken("identifier", idn);
+                addToken("operator", idn);
             };
         }
         return tokens;
-    } // function 
+    }; // lex
+    
+    // create parse tree
+    this.parse = function ( tokenList ) {
+        
+    };  // parse
+
+    // environment in which to evaluate fxn
+    function Environment () {
+        var entries = {};
+    }
+
+    // evaluate a parse tree
+    this.eval = function ( fxn, environment ) {
+        
+    }; // eval
+
+    // lex, parse, eval
+    this.interpret = function ( lispString ) {
+        this.eval ( this.parse ( this.lex( s ) ), new Environment );
+    }; // interpret
 }
 
 
-module.exports = Tokenizer;
+module.exports = EWLang;
 
 
-/*
-var tok = new Tokenizer;
-console.log("parsed raw input into operators, numbers & identifiers\n", tok.parse("(123 abc 231)"));
-*/
+var tok = new EWLang;
+console.log("parsed raw input into operators, numbers & identifiers\n", tok.lex("(+ 1 (* 2 3))"));
