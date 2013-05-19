@@ -53,51 +53,46 @@ function EWLang () {
         return tokens;
     }; // lex
     
-    // create parse tree from list of tokens
-    // @input : list of tokens from lex
-    this.parse = function ( input ) {
-        function isOperation ( input ) {
-            
+    // create parse tree from expression
+    // @expl : list of tokens
+    // returns : one expression or value
+    var eval = this.eval = function ( expl, env ) {
+        var environment = (env)?env:new Environment();
+        var car = expl[0];
+        var cdr = expl.slice(1);
+
+        // self-evaluating things like bools, numbers
+        function isAtomic(exp) {
+            //            console.log("isAtomic", exp);            
+            return /[0-9]/.test(exp.value);
         }
 
-        // turn flat list of tokens (including parens) in to list including lists
-        function listify ( input ) {
-            function isList(input) {
-                // lists start with parens
-                return (input.type == "paren" && input.value == "(");
-            }
-
-            var c, i=0; rl=[];
-            while (i<input.length) {
-                c=input[i];
-                console.log("listify", isList(c)); rl.push(c);
-                i++;
-            }
-            return rl;
+        if (isAtomic(car)) {
+            return car.value;
+        } else {
+            return "TODO:eval:"+expl
         }
-
-        var tlist = listify (input);
-        return tlist;
-    };  // parse
+    };  // eval
 
     // environment in which to evaluate fxn
     function Environment () {
         var entries = {};
     }
-
-    // evaluate a parse tree
-    this.eval = function ( fxn, environment ) {
-    }; // eval
-
-    // lex, parse, eval
-    this.interpret = function ( lispString ) {
-        return this.parse ( this.lex( lispString ) );
-    }; // interpret
 }
 
 
 module.exports = EWLang;
 
 
-var tok = new EWLang;
-console.log("parsed raw input into operators, numbers & identifiers\n", tok.interpret("(+ 1 (* 2 3))"));
+function interpret(s) {
+    return lisper.eval(lisper.lex(s));
+}
+function test (type, s) {
+console.log(type, interpret(s));
+}
+
+var lisper = new EWLang;
+test("int","1");
+test("string","'abc'"); // ???
+test("sexp","(+ 1 2)");
+//console.log("parsed raw input into operators, numbers & identifiers\n", lisp.eval(lisp.lex("(+ 1 (* 2 3))")));
