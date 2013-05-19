@@ -53,9 +53,31 @@ function EWLang () {
         return tokens;
     }; // lex
     
-    // create parse tree
-    this.parse = function ( tokenList ) {
-        return tokenList;
+    // create parse tree from list of tokens
+    // @input : list of tokens from lex
+    this.parse = function ( input ) {
+        function isOperation ( input ) {
+            
+        }
+
+        // turn flat list of tokens (including parens) in to list including lists
+        function listify ( input ) {
+            function isList(input) {
+                // lists start with parens
+                return (input.type == "paren" && input.value == "(");
+            }
+
+            var c, i=0; rl=[];
+            while (i<input.length) {
+                c=input[i];
+                console.log("listify", isList(c)); rl.push(c);
+                i++;
+            }
+            return rl;
+        }
+
+        var tlist = listify (input);
+        return tlist;
     };  // parse
 
     // environment in which to evaluate fxn
