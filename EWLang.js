@@ -1,26 +1,26 @@
 function EWLang () {
-    var whitespace = "\n\r\t\m ";
-    function isWhitespace (char) {
-        return whitespace.indexOf(char) != -1;
-    }
-
-    var digits = "0123456789";
-    function isDigit ( char ) {
-        return digits.indexOf(char) != -1;
-    }
-
-    var parens = "()";
-    function isParen ( char ) {
-        return parens.indexOf(char) != -1;
-    }
-
-    var chars="~!@#$%^&*_+-=abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ\][|}{';:/.,?><\"";
-    function isChar ( char ) {
-        return chars.indexOf(char) != -1;
-    }
-
     // returns list of tokens
     this.lex = function (input) {
+        var whitespace = "\n\r\t\m ";
+        function isWhitespace (char) {
+            return whitespace.indexOf(char) != -1;
+        }
+
+        var digits = "0123456789";
+        function isDigit ( char ) {
+            return digits.indexOf(char) != -1;
+        }
+
+        var parens = "()";
+        function isParen ( char ) {
+            return parens.indexOf(char) != -1;
+        }
+
+        var chars="~!@#$%^&*_+-=abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ\][|}{';:/.,?><\"";
+        function isChar ( char ) {
+            return chars.indexOf(char) != -1;
+        }
+
         var c, i=0, tokens = [];
         function advance () {
             return c=input[++i];
@@ -70,7 +70,8 @@ function EWLang () {
         if (isAtomic(car)) {
             return car.value;
         } else {
-            return "TODO:eval:"+expl
+            console.log("TODO:eval:",expl);
+            return "TODO:eval:"+expl;
         }
     };  // eval
 
@@ -88,7 +89,7 @@ function interpret(s) {
     return lisper.eval(lisper.lex(s));
 }
 function test (type, s) {
-console.log(type, interpret(s));
+    console.log("TEST",type, interpret(s));
 }
 
 var lisper = new EWLang;
