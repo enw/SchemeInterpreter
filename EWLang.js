@@ -83,11 +83,35 @@ function EWLang () {
     };  // eval
 
     // environment in which to evaluate fxn
-    function Environment (parent) {
-        var entries = {},
-            parentEnvironment;
-            
-        
+    this.makeEnvironment = function (parent) {
+        return new Environment(parent);
+    }
+    var Environment = function (parent) {
+        var entries = {};
+        this.list = function () {
+            if (parent) {
+                var union = parent.list();
+                for (var i in entries) {
+                    union[i] = entries[i];
+                }
+                entries = union;
+            }
+            return entries;
+        }
+        this.set = function(name, value){
+            entries[name]=value;
+        };
+        this.get = function (name) {
+            if (entries[name]) {
+                return entries[name];
+            } else {
+                if (parentEnvironment) {
+                    return parentEnvironment.get(name);
+                } else {
+                    return null;
+                }
+            }
+        }
     }
 }
 
@@ -103,7 +127,19 @@ function test (type, s) {
 }
 
 var lisper = new EWLang;
+/*
 test("int","1");
 test("name","name");
 test("sexp","(+ 1 2)");
 //console.log("parsed raw input into operators, numbers & identifiers\n", lisp.eval(lisp.lex("(+ 1 (* 2 3))")));
+*/
+var parentEnv = lisper.makeEnvironment();
+parentEnv.set("cat", "Samuel");
+
+var env = lisper.makeEnvironment(parentEnv);
+console.log("Environment",env);
+env.set("sayHello", function() {console.log('sayHello')});
+env.set("name", "Todd Rundgren");
+env.set("age", 32);
+console.log("Environment",env.list());
+
