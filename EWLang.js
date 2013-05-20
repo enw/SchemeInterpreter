@@ -26,7 +26,8 @@ function EWLang () {
             return c=input[++i];
         }
         function addToken(type, value) {
-            tokens.push({type:type, value:value});
+            //            tokens.push({type:type, value:value});
+            tokens.push(value);
         }
 
         // create list of tokens
@@ -63,12 +64,18 @@ function EWLang () {
 
         // self-evaluating things like bools, numbers
         function isAtomic(exp) {
-            //            console.log("isAtomic", exp);            
-            return /[0-9]/.test(exp.value);
+            return /[0-9]/.test(exp);
+        }
+
+        // 
+        function isVariable(exp){
+            console.log("TODO: isVariable");
+            return false;
         }
 
         if (isAtomic(car)) {
-            return car.value;
+            return car;
+        } else if (isVariable(car)) {
         } else {
             console.log("TODO:eval:",expl);
             return "TODO:eval:"+expl;
@@ -76,8 +83,11 @@ function EWLang () {
     };  // eval
 
     // environment in which to evaluate fxn
-    function Environment () {
-        var entries = {};
+    function Environment (parent) {
+        var entries = {},
+            parentEnvironment;
+            
+        
     }
 }
 
@@ -94,6 +104,6 @@ function test (type, s) {
 
 var lisper = new EWLang;
 test("int","1");
-test("string","'abc'"); // ???
+test("name","name");
 test("sexp","(+ 1 2)");
 //console.log("parsed raw input into operators, numbers & identifiers\n", lisp.eval(lisp.lex("(+ 1 (* 2 3))")));
