@@ -58,24 +58,30 @@ function EWLang () {
     // @expl : list of tokens
     // returns : one expression or value
     var eval = this.eval = function ( expl, env ) {
-        var environment = (env)?env:new Environment();
+        var env = (env)?env:makeInitialEnvironment();
         var car = expl[0];
         var cdr = expl.slice(1);
 
+        // set up env
+        function makeInitialEnvironment() {
+            var env = new Environment();
+            env.set("foo", "Hello world!");
+            return env;
+        }
+
         // self-evaluating things like bools, numbers
-        function isAtomic(exp) {
-            return /[0-9]/.test(exp);
-        }
+        function isAtom(exp) { return /[0-9]|true|false/.test(exp); };
+        function getAtom(exp) { return exp; };
 
-        // 
-        function isVariable(exp){
-            console.log("TODO: isVariable");
-            return false;
-        }
+        // variables
+        function isVariable(exp){ return env.isDefined(exp); };
+        function getVariable(exp){ return env.get(exp); };
 
-        if (isAtomic(car)) {
+
+        if (isAtom(car)) {
             return car;
-        } else if (isVariable(car)) {
+        } else if (isVariable(car), env) {
+            return getVariable(car);
         } else {
             console.log("TODO:eval:",expl);
             return "TODO:eval:"+expl;
@@ -92,21 +98,24 @@ function EWLang () {
             if (parent) {
                 var union = parent.list();
                 for (var i in entries) {
-                    union[i] = entries[i];
+                    union[i.name] = entries[i];
                 }
                 entries = union;
             }
             return entries;
         }
+        this.isDefined = function( name ) {
+            return entries[name] != undefined;
+        }
         this.set = function(name, value){
-            entries[name]=value;
+            entries[name]={name:name,value:value};
         };
         this.get = function (name) {
             if (entries[name]) {
-                return entries[name];
+                return entries[name].value;
             } else {
-                if (parentEnvironment) {
-                    return parentEnvironment.get(name);
+                if (parent) {
+                    return parent.get(name);
                 } else {
                     return null;
                 }
@@ -123,23 +132,31 @@ function interpret(s) {
     return lisper.eval(lisper.lex(s));
 }
 function test (type, s) {
-    console.log("TEST",type, interpret(s));
+    var results = interpret(s);
+    console.log("TEST",type, results);
 }
 
 var lisper = new EWLang;
-/*
+
 test("int","1");
-test("name","name");
+test("bool","true");
+test("environment","foo");
+test("apply","(+ 1 2)");
+/*
+test("apply","(+ 1 2)");
+test("apply recurse","(+ 1 (* 5 2))");
 test("sexp","(+ 1 2)");
 //console.log("parsed raw input into operators, numbers & identifiers\n", lisp.eval(lisp.lex("(+ 1 (* 2 3))")));
 */
+/*
 var parentEnv = lisper.makeEnvironment();
 parentEnv.set("cat", "Samuel");
 
+// test environment
 var env = lisper.makeEnvironment(parentEnv);
 console.log("Environment",env);
 env.set("sayHello", function() {console.log('sayHello')});
 env.set("name", "Todd Rundgren");
 env.set("age", 32);
 console.log("Environment",env.list());
-
+*/
