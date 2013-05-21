@@ -65,7 +65,15 @@ function EWLang () {
         // set up env
         function makeInitialEnvironment() {
             var env = new Environment();
+            // the usual first message...
             env.set("hello", "Hello world!");
+            
+            //  built-in-functions
+            env.set("+", function() {
+                    var sum=0;
+                    for (var i in arguments) sum+=arguments;
+                    return sum;
+            });
             return env;
         }
 
@@ -77,14 +85,15 @@ function EWLang () {
         function isVariable(exp){ return env.isDefined(exp); };
         function getVariable(exp){ return env.get(exp); };
 
-
+        //
         if (isAtom(car)) {
             return car;
-        } else if (isVariable(car), env) {
+        } else if (isVariable(car)) {
+            //            console.log("GOT VARIABLE", car, isVariable(car));
             return getVariable(car);
         } else {
-            console.log("TODO:eval:",expl);
-            return "TODO:eval:"+expl;
+            //            console.log("WARNING: unable to evalue",expl);
+            throw("WARNING: unable to eval. Not defined in environment::"+ expl);
         }
     };  // eval
 
@@ -141,7 +150,7 @@ var lisper = new EWLang;
 test("int","1");
 test("bool","true");
 test("value in environment","hello");
-test("value not definedin environment","no_hello");
+test("value not defined in environment","no_hello");
 test("apply","(+ 1 2)");
 /*
 test("apply","(+ 1 2)");
