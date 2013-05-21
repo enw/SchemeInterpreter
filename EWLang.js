@@ -65,7 +65,7 @@ function EWLang () {
         // set up env
         function makeInitialEnvironment() {
             var env = new Environment();
-            env.set("foo", "Hello world!");
+            env.set("hello", "Hello world!");
             return env;
         }
 
@@ -140,7 +140,8 @@ var lisper = new EWLang;
 
 test("int","1");
 test("bool","true");
-test("environment","foo");
+test("value in environment","hello");
+test("value not definedin environment","no_hello");
 test("apply","(+ 1 2)");
 /*
 test("apply","(+ 1 2)");
