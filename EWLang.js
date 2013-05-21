@@ -92,8 +92,7 @@ function EWLang () {
             //            console.log("GOT VARIABLE", car, isVariable(car));
             return getVariable(car);
         } else {
-            //            console.log("WARNING: unable to evalue",expl);
-            throw("WARNING: unable to eval. Not defined in environment::"+ expl);
+            throw("ERROR: unable to eval. Not defined in environment::"+ expl);
         }
     };  // eval
 
@@ -150,7 +149,7 @@ var lisper = new EWLang;
 test("int","1");
 test("bool","true");
 test("value in environment","hello");
-test("value not defined in environment","no_hello");
+//test("value not defined in environment","no_hello");
 test("apply","(+ 1 2)");
 /*
 test("apply","(+ 1 2)");
