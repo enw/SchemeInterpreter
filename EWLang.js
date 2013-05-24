@@ -1,4 +1,12 @@
 function EWLang () {
+    // token, string, etc
+    function makeToken(type, value) {return {type:type, value:value}};
+    function makeString(value) {return {type:'string', value:value}};
+    function getTokenType(tok) {return tok.type};
+    function getTokenValue(tok) {return tok.value};
+
+    // get token value
+
     // returns list of tokens
     this.lex = function (input) {
         var whitespace = "\n\r\t\m ";
@@ -26,8 +34,8 @@ function EWLang () {
             return c=input[++i];
         }
         function addToken(type, value) {
-            //            tokens.push({type:type, value:value});
-            tokens.push(value);
+            tokens.push(makeToken(type, value));
+            //tokens.push(value);
         }
 
         // create list of tokens
@@ -48,7 +56,7 @@ function EWLang () {
             } else if (isChar(c)) {
                 var idn = c;
                 while (isChar(advance())) idn += c;
-                addToken("operator", idn);
+                addToken("symbol", idn);
             };
         }
         return tokens;
@@ -59,6 +67,8 @@ function EWLang () {
     // returns : one expression or value
     var eval = this.eval = function ( expl, env ) {
         var env = (env)?env:makeInitialEnvironment();
+        
+        // parsed tokens
         var car = expl[0];
         var cdr = expl.slice(1);
 
@@ -66,7 +76,7 @@ function EWLang () {
         function makeInitialEnvironment() {
             var env = new Environment();
             // the usual first message...
-            env.set("hello", "Hello world!");
+            env.set("hello", makeString("Hello world!"));
             
             //  built-in-functions
             env.set("+", function() {
@@ -78,18 +88,34 @@ function EWLang () {
         }
 
         // self-evaluating things like bools, numbers
-        function isAtom(exp) { return /[0-9]|true|false/.test(exp); };
-        function getAtom(exp) { return exp; };
+        function isAtom(token) { return isNumber(token) || isBoolean(token); };
+        function isSymbol(token) { return getTokenType(token) == 'symbol'; };
+        function isNumber(token) { return getTokenType(token) == 'number'; };
+        function isBoolean(token) {
+            //            console.log("isBoolean?", token);
+            //            console.log("isSymbol?", isSymbol(token));
+            //    console.log("tokenValue?", getTokenValue(token));
+            return isSymbol(token) 
+                && (getTokenValue(token) == '#t' 
+                    || getTokenValue(token) =='#f')};
+        function getAtom(token) { return getTokenValue(token); };
 
         // variables
-        function isVariable(exp){ return env.isDefined(exp); };
-        function getVariable(exp){ return env.get(exp); };
+        function isVariable(token){ return getTokenType(token) == 'symbol' 
+                && env.isDefined(getTokenValue(token)); };
+        function getVariable(token){ return env.get(getTokenValue(token)); };
 
         //
+        /*
+        console.log("*** eval this token", car, isAtom(car));
+        console.log("*** eval this token", car, isVariable(car));
+        console.log("*** eval this token", car, isSymbol(car));
+        console.log("*** eval this token", car, getTokenValue(car));
+        */
+        //        console.log("*** isAtom?", isAtom(car));
         if (isAtom(car)) {
-            return car;
+            return getAtom(car);
         } else if (isVariable(car)) {
-            //            console.log("GOT VARIABLE", car, isVariable(car));
             return getVariable(car);
         } else {
             throw("ERROR: unable to eval. Not defined in environment::"+ expl);
@@ -147,10 +173,10 @@ function test (type, s) {
 var lisper = new EWLang;
 
 test("int","1");
-test("bool","true");
+test("bool","#t");
 test("value in environment","hello");
 //test("value not defined in environment","no_hello");
-test("apply","(+ 1 2)");
+//test("apply","(+ 1 2)");
 /*
 test("apply","(+ 1 2)");
 test("apply recurse","(+ 1 (* 5 2))");
