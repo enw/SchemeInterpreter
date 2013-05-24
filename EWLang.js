@@ -1,7 +1,8 @@
 function EWLang () {
     // token, string, etc
     function makeToken(type, value) {return {type:type, value:value}};
-    function makeString(value) {return {type:'string', value:value}};
+    //    function makeString(value) {return {type:'string', value:value}};
+    function makeString(value) {return value;};
     function getTokenType(tok) {return tok.type};
     function getTokenValue(tok) {return tok.value};
 
@@ -98,7 +99,9 @@ function EWLang () {
             return isSymbol(token) 
                 && (getTokenValue(token) == '#t' 
                     || getTokenValue(token) =='#f')};
-        function getAtom(token) { return getTokenValue(token); };
+        function getNumber(token) { return getTokenValue(token); };
+        function getBoolean(token) { return '#t'==getTokenValue(token); };
+        function getAtom(token) { return (isNumber(token))?getNumber(token):getBoolean(token)};
 
         // variables
         function isVariable(token){ return getTokenType(token) == 'symbol' 
@@ -167,13 +170,14 @@ function interpret(s) {
 }
 function test (type, s) {
     var results = interpret(s);
-    console.log("TEST",type, results);
+    console.log("TEST",type,s,'=',results);
 }
 
 var lisper = new EWLang;
 
 test("int","1");
 test("bool","#t");
+test("bool","#f");
 test("value in environment","hello");
 //test("value not defined in environment","no_hello");
 //test("apply","(+ 1 2)");
