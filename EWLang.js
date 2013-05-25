@@ -25,9 +25,14 @@ function EWLang () {
             return parens.indexOf(char) != -1;
         }
 
-        var chars="~!@#$%^&*_+-=abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ\][|}{';:/.,?><\"";
+        var chars="~!@#$%^&*_+-=abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ\][|}{'\";:/.,?><";
         function isChar ( char ) {
             return chars.indexOf(char) != -1;
+        }
+
+        var quotes="'\"";
+        function isQuote ( char ) {
+            return quotes.indexOf(char) != -1;
         }
 
         var c, i=0, tokens = [];
@@ -54,6 +59,14 @@ function EWLang () {
                 }
                 num = parseFloat(num);
                 addToken("number", num);
+            } else if (isQuote(c)) {
+                var quote=c;
+                advance();
+                var str=c;
+                while (advance()!=quote) str += c;
+                advance();
+                addToken("string",str);
+
             } else if (isChar(c)) {
                 var idn = c;
                 while (isChar(advance())) idn += c;
@@ -121,6 +134,7 @@ function EWLang () {
         } else if (isVariable(car)) {
             return getVariable(car);
         } else {
+            console.log(expl);
             throw("ERROR: unable to eval. Not defined in environment::"+ expl);
         }
     };  // eval
@@ -178,6 +192,7 @@ var lisper = new EWLang;
 test("int","1");
 test("bool","#t");
 test("bool","#f");
+test("string",'"hello, world!"');
 test("value in environment","hello");
 //test("value not defined in environment","no_hello");
 //test("apply","(+ 1 2)");
@@ -186,8 +201,6 @@ test("apply","(+ 1 2)");
 test("apply recurse","(+ 1 (* 5 2))");
 test("sexp","(+ 1 2)");
 //console.log("parsed raw input into operators, numbers & identifiers\n", lisp.eval(lisp.lex("(+ 1 (* 2 3))")));
-*/
-/*
 var parentEnv = lisper.makeEnvironment();
 parentEnv.set("cat", "Samuel");
 
