@@ -102,19 +102,28 @@ function EWLang () {
         }
 
         // self-evaluating things like bools, numbers
-        function isAtom(token) { return isNumber(token) || isBoolean(token); };
+        function isAtom(token) { return isNumber(token) || isBoolean(token) || isString(token); };
+        function isString(token) { return getTokenType(token) == 'string'; };
         function isSymbol(token) { return getTokenType(token) == 'symbol'; };
         function isNumber(token) { return getTokenType(token) == 'number'; };
         function isBoolean(token) {
-            //            console.log("isBoolean?", token);
-            //            console.log("isSymbol?", isSymbol(token));
-            //    console.log("tokenValue?", getTokenValue(token));
             return isSymbol(token) 
                 && (getTokenValue(token) == '#t' 
                     || getTokenValue(token) =='#f')};
         function getNumber(token) { return getTokenValue(token); };
+        function getString(token) { return getTokenValue(token); };
         function getBoolean(token) { return '#t'==getTokenValue(token); };
-        function getAtom(token) { return (isNumber(token))?getNumber(token):getBoolean(token)};
+        function getAtom(token) { 
+            var atom;
+            if (isNumber(token)) {
+                return getNumber(token);
+            } else if (isBoolean(token)) {
+                return getBoolean(token);
+            } else if (isString(token)) {
+                return getString(token);
+            };
+            throw('ERROR:getAtom'+JSON.stringify(token)); 
+        };
 
         // variables
         function isVariable(token){ return getTokenType(token) == 'symbol' 
@@ -122,13 +131,6 @@ function EWLang () {
         function getVariable(token){ return env.get(getTokenValue(token)); };
 
         //
-        /*
-        console.log("*** eval this token", car, isAtom(car));
-        console.log("*** eval this token", car, isVariable(car));
-        console.log("*** eval this token", car, isSymbol(car));
-        console.log("*** eval this token", car, getTokenValue(car));
-        */
-        //        console.log("*** isAtom?", isAtom(car));
         if (isAtom(car)) {
             return getAtom(car);
         } else if (isVariable(car)) {
