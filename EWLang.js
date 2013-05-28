@@ -8,8 +8,8 @@ function EWLang () {
 
     // get token value
 
-    // returns list of tokens
-    this.lex = function (input) {
+    // returns parse tree
+    this.parse = function (input) {
         var whitespace = "\n\r\t\m ";
         function isWhitespace (char) {
             return whitespace.indexOf(char) != -1;
@@ -44,7 +44,7 @@ function EWLang () {
             //tokens.push(value);
         }
 
-        // create list of tokens
+        // lex/tokenize
         while (i<input.length) {
             c=input[i];
             if (isWhitespace(c)) advance();
@@ -73,8 +73,58 @@ function EWLang () {
                 addToken("symbol", idn);
             };
         }
-        return tokens;
-    }; // lex
+
+        // the one token to return
+        function makeParseTree(input) {
+            var token,
+            i = 0,
+            s=input,
+            c = s[i] // char
+            ;
+
+            function advance() {
+                c = s[++i];
+                return c;
+            }
+
+            // consume one token/char
+            // if token is (, return a list with child tokens
+            // else return a token
+            function next() {
+                function getToken(type, value) {
+                    return {
+                        type: type,
+                        value: value
+                    };
+                }
+
+                function addChild(token, child) {
+                    token.value.push(child);
+                }
+                var token;
+
+                function isOpenParen(token) {
+                    return c.type == 'paren' && c.value == '(';
+                }
+                function isCloseParen(token) {
+                    return c.type == 'paren' && c.value == ')';
+                }
+
+                if (isOpenParen(c)) {
+                    token = getToken('list', []);
+                    while (!isCloseParen(advance())) {
+                        addChild(token, next());
+                    }
+                } else {
+                    token = c;
+                }
+                return token;
+            }
+            var ret = next();
+            return ret;
+        } // makeParseTree
+        return makeParseTree(tokens);
+    }; // parse
     
     // create parse tree from expression
     // @expl : list of tokens
@@ -182,11 +232,12 @@ module.exports = EWLang;
 
 
 function interpret(s) {
-    return lisper.eval(lisper.lex(s));
+    return lisper.eval(lisper.parse(s));
 }
 function test (type, s) {
-    var results = interpret(s);
-    console.log("TEST",type,s,'=',results);
+    //    var results = interpret(s);
+    var results = lisper.parse(s);
+    console.log("TEST",type,s,'=',JSON.stringify(results));
 }
 
 var lisper = new EWLang;
@@ -198,11 +249,12 @@ test("string",'"hello, world!"');
 test("value in environment","hello");
 //test("value not defined in environment","no_hello");
 //test("apply","(+ 1 2)");
-/*
 test("apply","(+ 1 2)");
 test("apply recurse","(+ 1 (* 5 2))");
 test("sexp","(+ 1 2)");
-//console.log("parsed raw input into operators, numbers & identifiers\n", lisp.eval(lisp.lex("(+ 1 (* 2 3))")));
+//console.log("parsed raw input into operators, numbers & identifiers\n", lisp.eval(lisp.parse("(+ 1 (* 2 3))")));
+/*
+
 var parentEnv = lisper.makeEnvironment();
 parentEnv.set("cat", "Samuel");
 
