@@ -159,10 +159,16 @@ function EWLang () {
             env.set("hello", makeString("Hello world!"));
             
             //  built-in-functions
+            // TODO: make this programmatic...?
             env.set("+", function() {
                     var sum=0;
-                    for (var i in arguments) sum+=arguments;
+                    for (var k in arguments) sum+=arguments[k];
                     return sum;
+            });
+            env.set("*", function() {
+                    var product=1;
+                    for (var k in arguments) product *=arguments[k];
+                    return product;
             });
             return env;
         }
@@ -198,28 +204,63 @@ function EWLang () {
                 && env.isDefined(getTokenValue(token)); };
         function getVariable(token){ return env.get(getTokenValue(token)); };
 
+        // 
+        function isApplication(sexp) {
+            return Array.isArray(sexp);
+        }
+        
+        function getOperator(app) {
+            return app[0];
+        }
+
+        function getOperands(app) {
+            return app.slice(1);
+        }
+        
+        function evalListOfValues( list, env) {
+            if (list.length == 0) {
+                return [];
+            } else {
+                return [ eval (list[0], env) ].concat( 
+                    evalListOfValues ( list.slice(1), env));
+            }
+        }
+
         /*
           the core of the evaluator
 
           primitive expressions - self-evaluating expressions, variables in env
           special forms -
-              - quoted expressions
-              - assignment - computes value, updates environment
-              - if expression
-              - lambda
-              - begin
-              - cond
+              - quoted expressions (NOT HANDLED)
+              - assignment - computes value, updates environment (NOT YET HANDLED)
+              - if expression (NOT YET HANDLED)
+              - lambda (NOT YET HANDLED)
+              - begin (NOT YET HANDLED)
+              - cond ( NOT YET HANDLED)
         */
-
-
         if (isSelfEvaluating(expl)) {
             return expl;
         } else if (isVariable(expl)) {
             return getVariable(expl);
+        } else if (isApplication(expl)) {
+            return apply( eval(getOperator(expl), env), 
+                          evalListOfValues(getOperands(expl), env));
         } else {
             throw("Unknown expression type -- EVAL -- "+ JSON.stringify(expl));
         }
     };  // eval
+
+    // apply primitive and compound (multi-step) procedures
+    var apply = this.apply = function ( procedure, arguments ) {
+        function isPrimitiveProcedure( proc ) {
+            return typeof proc == 'function';
+        }
+
+        if (isPrimitiveProcedure( procedure )) {
+            return procedure.apply({}, arguments);
+        }
+        throw ("ERROR: apply uncaught");
+    }
 
     // environment in which to evaluate fxn
     this.makeEnvironment = function (parent) {
@@ -286,13 +327,9 @@ test('bool','#f');
 test('string','"hello, world!"');
 test('value in environment','hello');
 //test('value not defined in environment','no_hello');
-//test('apply','(+ 1 2)');
 test('apply','(+ 1 2)');
 test('apply recurse','(+ 1 (* 5 2))');
-test('sexp','(+ 1 2)');
-//console.log('parsed raw input into operators, numbers & identifiers\n', lisp.eval(lisp.parse('(+ 1 (* 2 3))')));
 /*
-
 var parentEnv = lisper.makeEnvironment();
 parentEnv.set('cat', 'Samuel');
 
