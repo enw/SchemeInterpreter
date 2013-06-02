@@ -51,6 +51,12 @@ function EWLang () {
         function advance () {
             return c=input[++i];
         }
+        function addNumber(num) {
+            tokens.push(num);
+        }
+        function addString(str) {
+            tokens.push(str);
+        }
         function addToken(type, value) {
             tokens.push(makeToken(type, value));
             //tokens.push(value);
@@ -70,14 +76,14 @@ function EWLang () {
                     do num += c; while (isDigit(advance()));
                 }
                 num = parseFloat(num);
-                addToken("number", num);
+                addNumber(num);
             } else if (isQuote(c)) {
                 var quote=c;
                 advance();
                 var str=c;
                 while (advance()!=quote) str += c;
                 advance();
-                addToken("string",str);
+                addString(str);
 
             } else if (isChar(c)) {
                 var idn = c;
@@ -123,9 +129,9 @@ function EWLang () {
                 }
 
                 if (isOpenParen(c)) {
-                    token = getToken('list', []);
+                    token = [];
                     while (!isCloseParen(advance())) {
-                        addChild(token, next());
+                        token.push(next());
                     }
                 } else {
                     token = c;
@@ -141,12 +147,15 @@ function EWLang () {
     // create parse tree from expression
     // @expl : list of tokens
     // returns : one expression or value
+
+    // example expl input - {"type":"list","value":[{"type":"symbol","value":"+"},{"type":"number","value":1},{"type":"list","value":[{"type":"symbol","value":"*"},{"type":"number","value":5},{"type":"number","value":2}]}]}
     var eval = this.eval = function ( expl, env ) {
         var env = (env)?env:makeInitialEnvironment();
-        
+
         // parsed tokens
-        var car = expl[0];
-        var cdr = expl.slice(1);
+        var first = expl[0];
+        var rest = expl.slice(1);
+        
 
         // set up env
         function makeInitialEnvironment() {
@@ -164,7 +173,9 @@ function EWLang () {
         }
 
         // self-evaluating things like bools, numbers
-        function isAtom(token) { return isNumber(token) || isBoolean(token) || isString(token); };
+        function isSelfEvaluating(token) { return isNumber(token) || isBoolean(token) || isString(token); };
+
+
         function isString(token) { return getTokenType(token) == 'string'; };
         function isSymbol(token) { return getTokenType(token) == 'symbol'; };
         function isNumber(token) { return getTokenType(token) == 'number'; };
@@ -175,7 +186,7 @@ function EWLang () {
         function getNumber(token) { return getTokenValue(token); };
         function getString(token) { return getTokenValue(token); };
         function getBoolean(token) { return '#t'==getTokenValue(token); };
-        function getAtom(token) { 
+        function getSelfEvaluatingValue(token) { 
             var atom;
             if (isNumber(token)) {
                 return getNumber(token);
@@ -184,7 +195,7 @@ function EWLang () {
             } else if (isString(token)) {
                 return getString(token);
             };
-            throw('ERROR:getAtom'+JSON.stringify(token)); 
+            throw('ERROR:getSelfEvaluatingValue'+JSON.stringify(token)); 
         };
 
         // variables
@@ -192,14 +203,28 @@ function EWLang () {
                 && env.isDefined(getTokenValue(token)); };
         function getVariable(token){ return env.get(getTokenValue(token)); };
 
-        //
-        if (isAtom(car)) {
-            return getAtom(car);
-        } else if (isVariable(car)) {
-            return getVariable(car);
+        /*
+          the core of the evaluator
+
+          primitive expressions - self-evaluating expressions, variables in env
+          special forms -
+              - quoted expressions
+              - assignment - computes value, updates environment
+              - if expression
+              - lambda
+              - begin
+              - cond
+        */
+
+        if (isSelfEvaluating(first)) {
+            return first;
+        } else if (isSelfEvaluatingToken(first)) {
+            return getSelfEvaluatingValue(first);
+        } else if (isVariable(first)) {
+            return getVariable(first);
         } else {
             console.log(expl);
-            throw("ERROR: unable to eval. Not defined in environment::"+ expl);
+            throw("Unknown expression type -- EVAL -- "+ expl);
         }
     };  // eval
 
@@ -244,11 +269,11 @@ module.exports = EWLang;
 
 
 function interpret(s) {
-    return lisper.eval(lisper.parse(s));
+//    return lisper.eval(lisper.parse(s));
+        return lisper.parse(s);
 }
 function test (type, s) {
-    //    var results = interpret(s);
-    var results = lisper.parse(s);
+    var results = interpret(s);
     console.log("TEST",type,s,'=',JSON.stringify(results));
 }
 
