@@ -148,14 +148,9 @@ function EWLang () {
     // @expl : list of tokens
     // returns : one expression or value
 
-    // example expl input - {"type":"list","value":[{"type":"symbol","value":"+"},{"type":"number","value":1},{"type":"list","value":[{"type":"symbol","value":"*"},{"type":"number","value":5},{"type":"number","value":2}]}]}
+    // example expl input - [{"type":"symbol","value":"+"},1,[{"type":"symbol","value":"*"},5,2]]
     var eval = this.eval = function ( expl, env ) {
         var env = (env)?env:makeInitialEnvironment();
-
-        // parsed tokens
-        var first = expl[0];
-        var rest = expl.slice(1);
-        
 
         // set up env
         function makeInitialEnvironment() {
@@ -176,9 +171,9 @@ function EWLang () {
         function isSelfEvaluating(token) { return isNumber(token) || isBoolean(token) || isString(token); };
 
 
-        function isString(token) { return getTokenType(token) == 'string'; };
+        function isString(token) { return typeof token == 'string'; };
         function isSymbol(token) { return getTokenType(token) == 'symbol'; };
-        function isNumber(token) { return getTokenType(token) == 'number'; };
+        function isNumber(token) { return typeof token == 'number'; };
         function isBoolean(token) {
             return isSymbol(token) 
                 && (getTokenValue(token) == '#t' 
@@ -216,15 +211,13 @@ function EWLang () {
               - cond
         */
 
-        if (isSelfEvaluating(first)) {
-            return first;
-        } else if (isSelfEvaluatingToken(first)) {
-            return getSelfEvaluatingValue(first);
-        } else if (isVariable(first)) {
-            return getVariable(first);
+
+        if (isSelfEvaluating(expl)) {
+            return expl;
+        } else if (isVariable(expl)) {
+            return getVariable(expl);
         } else {
-            console.log(expl);
-            throw("Unknown expression type -- EVAL -- "+ expl);
+            throw("Unknown expression type -- EVAL -- "+ JSON.stringify(expl));
         }
     };  // eval
 
@@ -234,6 +227,14 @@ function EWLang () {
     }
     var Environment = function (parent) {
         var entries = {};
+        // returns string, number, boolean, list or symbolic expression
+        function getValue(token) {
+            if (token.value) {
+                return token.value;
+            } else {
+                return token;
+            }
+        }
         this.list = function () {
             if (parent) {
                 var union = parent.list();
@@ -248,11 +249,11 @@ function EWLang () {
             return entries[name] != undefined;
         }
         this.set = function(name, value){
-            entries[name]={name:name,value:value};
+            entries[name]=value;
         };
         this.get = function (name) {
             if (entries[name]) {
-                return entries[name].value;
+                return getValue(entries[name]);
             } else {
                 if (parent) {
                     return parent.get(name);
@@ -269,8 +270,8 @@ module.exports = EWLang;
 
 
 function interpret(s) {
-//    return lisper.eval(lisper.parse(s));
-        return lisper.parse(s);
+    return lisper.eval(lisper.parse(s));
+//        return lisper.parse(s);
 }
 function test (type, s) {
     var results = interpret(s);
@@ -279,27 +280,27 @@ function test (type, s) {
 
 var lisper = new EWLang;
 
-test("int","1");
-test("bool","#t");
-test("bool","#f");
-test("string",'"hello, world!"');
-test("value in environment","hello");
-//test("value not defined in environment","no_hello");
-//test("apply","(+ 1 2)");
-test("apply","(+ 1 2)");
-test("apply recurse","(+ 1 (* 5 2))");
-test("sexp","(+ 1 2)");
-//console.log("parsed raw input into operators, numbers & identifiers\n", lisp.eval(lisp.parse("(+ 1 (* 2 3))")));
+test('number','1');
+test('bool','#t');
+test('bool','#f');
+test('string','"hello, world!"');
+test('value in environment','hello');
+//test('value not defined in environment','no_hello');
+//test('apply','(+ 1 2)');
+test('apply','(+ 1 2)');
+test('apply recurse','(+ 1 (* 5 2))');
+test('sexp','(+ 1 2)');
+//console.log('parsed raw input into operators, numbers & identifiers\n', lisp.eval(lisp.parse('(+ 1 (* 2 3))')));
 /*
 
 var parentEnv = lisper.makeEnvironment();
-parentEnv.set("cat", "Samuel");
+parentEnv.set('cat', 'Samuel');
 
 // test environment
 var env = lisper.makeEnvironment(parentEnv);
-console.log("Environment",env);
-env.set("sayHello", function() {console.log('sayHello')});
-env.set("name", "Todd Rundgren");
-env.set("age", 32);
-console.log("Environment",env.list());
+console.log('Environment',env);
+env.set('sayHello', function() {console.log('sayHello')});
+env.set('name', 'Todd Rundgren');
+env.set('age', 32);
+console.log('Environment',env.list());
 */
