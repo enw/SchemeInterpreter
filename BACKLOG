@@ -1,0 +1,7 @@
+TODO
+* LEX, PARSE, EVAL
+
+MAYBE
+* maybe use regex instead of old-school javascript string.indexOf()...
+
+parse strings
