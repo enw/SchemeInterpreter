@@ -175,6 +175,7 @@ function EWLang () {
 
         // self-evaluating things like bools, numbers
         function isSelfEvaluating(token) { return isNumber(token) || isBoolean(token) || isString(token); };
+        function evalSelfEvaluating(token) { return token; };
 
 
         function isString(token) { return typeof token == 'string'; };
@@ -202,12 +203,14 @@ function EWLang () {
         // variables
         function isVariable(token){ return getTokenType(token) == 'symbol' 
                 && env.isDefined(getTokenValue(token)); };
-        function getVariable(token){ return env.get(getTokenValue(token)); };
+        function evalVariable(token){ return env.get(getTokenValue(token)); };
 
         // 
-        function isApplication(sexp) {
-            return Array.isArray(sexp);
-        }
+        function isApplication(sexp) { return Array.isArray(sexp); }
+        function evalApplication(expl, env) {
+            return apply( eval(getOperator(expl), env), 
+                          evalListOfValues(getOperands(expl), env));
+        };
         
         function getOperator(app) {
             return app[0];
@@ -233,6 +236,18 @@ function EWLang () {
             return expl && expl.type && expl.type == "set!";
         };
 
+        // for adding types of objects the evaluator can handle at runtime
+        var expressionTypes = [];
+        var addExpressionType = this.addExpressionType = function ( type, test, evaluator ) {
+            expressionTypes.push ( { type:type, test:test, evaluator:evaluator} )
+            //            console.log("ADD EXPRESSION TYPE", type, expressionTypes);
+        }
+        // self-evaluating
+        
+        addExpressionType ("self-evaluating", isSelfEvaluating, evalSelfEvaluating);
+        addExpressionType ("variable", isVariable, evalVariable);
+        addExpressionType ("application", isApplication, evalApplication);
+
         /*
           the core of the evaluator
 
@@ -245,16 +260,15 @@ function EWLang () {
               - begin (NOT YET HANDLED)
               - cond ( NOT YET HANDLED)
         */
-        if (isSelfEvaluating(expl)) {
-            return expl;
-        } else if (isVariable(expl)) {
-            return getVariable(expl);
-        } else if (isApplication(expl)) {
-            return apply( eval(getOperator(expl), env), 
-                          evalListOfValues(getOperands(expl), env));
-        } else {
-            throw("Unknown expression type -- EVAL -- "+ JSON.stringify(expl));
+        for (var i=0;i<expressionTypes.length;i++) {
+            var test = expressionTypes[i].test,
+                evaluate = expressionTypes[i].evaluator;
+            if ( test(expl) ) {
+                return evaluate(expl,env);
+            }
         }
+        // not handled
+        throw("Unknown expression type -- EVAL -- "+ JSON.stringify(expl));
     };  // eval
 
 
@@ -274,8 +288,6 @@ function EWLang () {
     function isCompoundProcedure( proc ) {
         return proc && proc.type == 'procedure';
     }
-
-    
 
     // apply primitive and compound (multi-step) procedures
     var apply = this.apply = function ( procedure, arguments ) {
