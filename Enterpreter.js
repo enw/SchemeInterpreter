@@ -227,6 +227,13 @@ function EWLang () {
         }
 
         /*
+          Assignments have the form (set! <var> <value>):
+         */
+        function isAssignment ( expl ) {
+            return expl && expl.type && expl.type == "set!";
+        };
+
+        /*
           the core of the evaluator
 
           primitive expressions - self-evaluating expressions, variables in env
@@ -250,16 +257,35 @@ function EWLang () {
         }
     };  // eval
 
+
+    function isPrimitiveProcedure( proc ) {
+        return typeof proc == 'function';
+    }
+    
+    // compound procedures are constructed from parameters,
+    // procedure bodies and environments
+    function makeCompoundProcedure ( parameters, body, env )  {
+        return {
+            parameters:parameters,
+            body: body,
+            environment: env
+        };
+    }
+    function isCompoundProcedure( proc ) {
+        return proc && proc.type == 'procedure';
+    }
+
+    
+
     // apply primitive and compound (multi-step) procedures
     var apply = this.apply = function ( procedure, arguments ) {
-        function isPrimitiveProcedure( proc ) {
-            return typeof proc == 'function';
-        }
-
         if (isPrimitiveProcedure( procedure )) {
             return procedure.apply({}, arguments);
+        } else if (isCompoundProcedure( procedure )) {
+            throw "TODO: apply compound procedure";
+        }else {
+            throw ("ERROR: apply uncaught::"+JSON.stringify(procedure)+"::"+arguments);
         }
-        throw ("ERROR: apply uncaught");
     }
 
     // environment in which to evaluate fxn
