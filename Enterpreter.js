@@ -144,164 +144,10 @@ function EWLang () {
         return makeParseTree(tokens);
     }; // parse
     
-    // create parse tree from expression
-    // @expl : list of tokens
-    // returns : one expression or value
 
-    // example expl input - [{"type":"symbol","value":"+"},1,[{"type":"symbol","value":"*"},5,2]]
-    var eval = this.eval = function ( expl, env ) {
-        var env = (env)?env:makeInitialEnvironment();
-
-        // set up env
-        function makeInitialEnvironment() {
-            var env = new Environment();
-            // the usual first message...
-            env.set("hello", makeString("Hello world!"));
-            
-            //  built-in-functions
-            // TODO: make this programmatic...?
-            env.set("+", function() {
-                    var sum=0;
-                    for (var k in arguments) sum+=arguments[k];
-                    return sum;
-            });
-            env.set("*", function() {
-                    var product=1;
-                    for (var k in arguments) product *=arguments[k];
-                    return product;
-            });
-            return env;
-        }
-
-        // self-evaluating things like bools, numbers
-        function isSelfEvaluating(token) { return isNumber(token) || isBoolean(token) || isString(token); };
-        function evalSelfEvaluating(token) { return token; };
-
-
-        function isString(token) { return typeof token == 'string'; };
-        function isSymbol(token) { return getTokenType(token) == 'symbol'; };
-        function isNumber(token) { return typeof token == 'number'; };
-        function isBoolean(token) {
-            return isSymbol(token) 
-                && (getTokenValue(token) == '#t' 
-                    || getTokenValue(token) =='#f')};
-        function getNumber(token) { return getTokenValue(token); };
-        function getString(token) { return getTokenValue(token); };
-        function getBoolean(token) { return '#t'==getTokenValue(token); };
-        function getSelfEvaluatingValue(token) { 
-            var atom;
-            if (isNumber(token)) {
-                return getNumber(token);
-            } else if (isBoolean(token)) {
-                return getBoolean(token);
-            } else if (isString(token)) {
-                return getString(token);
-            };
-            throw('ERROR:getSelfEvaluatingValue'+JSON.stringify(token)); 
-        };
-
-        // variables
-        function isVariable(token){ return getTokenType(token) == 'symbol' 
-                && env.isDefined(getTokenValue(token)); };
-        function evalVariable(token){ return env.get(getTokenValue(token)); };
-
-        // 
-        function isApplication(sexp) { return Array.isArray(sexp); }
-        function evalApplication(expl, env) {
-            return apply( eval(getOperator(expl), env), 
-                          evalListOfValues(getOperands(expl), env));
-        };
-        
-        function getOperator(app) {
-            return app[0];
-        }
-
-        function getOperands(app) {
-            return app.slice(1);
-        }
-        
-        function evalListOfValues( list, env) {
-            if (list.length == 0) {
-                return [];
-            } else {
-                return [ eval (list[0], env) ].concat( 
-                    evalListOfValues ( list.slice(1), env));
-            }
-        }
-
-        /*
-          Assignments have the form (set! <var> <value>):
-         */
-        function isAssignment ( expl ) {
-            return expl && expl.type && expl.type == "set!";
-        };
-
-        // for adding types of objects the evaluator can handle at runtime
-        var expressionTypes = [];
-        var addExpressionType = this.addExpressionType = function ( type, test, evaluator ) {
-            expressionTypes.push ( { type:type, test:test, evaluator:evaluator} )
-            //            console.log("ADD EXPRESSION TYPE", type, expressionTypes);
-        }
-        // self-evaluating
-        
-        addExpressionType ("self-evaluating", isSelfEvaluating, evalSelfEvaluating);
-        addExpressionType ("variable", isVariable, evalVariable);
-        addExpressionType ("application", isApplication, evalApplication);
-
-        /*
-          the core of the evaluator
-
-          primitive expressions - self-evaluating expressions, variables in env
-          special forms -
-              - quoted expressions (NOT HANDLED)
-              - assignment - computes value, updates environment (NOT YET HANDLED)
-              - if expression (NOT YET HANDLED)
-              - lambda (NOT YET HANDLED)
-              - begin (NOT YET HANDLED)
-              - cond ( NOT YET HANDLED)
-        */
-        for (var i=0;i<expressionTypes.length;i++) {
-            var test = expressionTypes[i].test,
-                evaluate = expressionTypes[i].evaluator;
-            if ( test(expl) ) {
-                return evaluate(expl,env);
-            }
-        }
-        // not handled
-        throw("Unknown expression type -- EVAL -- "+ JSON.stringify(expl));
-    };  // eval
-
-
-    function isPrimitiveProcedure( proc ) {
-        return typeof proc == 'function';
-    }
-    
-    // compound procedures are constructed from parameters,
-    // procedure bodies and environments
-    function makeCompoundProcedure ( parameters, body, env )  {
-        return {
-            parameters:parameters,
-            body: body,
-            environment: env
-        };
-    }
-    function isCompoundProcedure( proc ) {
-        return proc && proc.type == 'procedure';
-    }
-
-    // apply primitive and compound (multi-step) procedures
-    var apply = this.apply = function ( procedure, arguments ) {
-        if (isPrimitiveProcedure( procedure )) {
-            return procedure.apply({}, arguments);
-        } else if (isCompoundProcedure( procedure )) {
-            throw "TODO: apply compound procedure";
-        }else {
-            throw ("ERROR: apply uncaught::"+JSON.stringify(procedure)+"::"+arguments);
-        }
-    }
 
     // environment in which to evaluate fxn
-    this.makeEnvironment = function (parent) {
+    var makeEnvironment = this.makeEnvironment = function (parent) {
         return new Environment(parent);
     }
     var Environment = function (parent) {
@@ -342,6 +188,175 @@ function EWLang () {
             }
         }
     }
+    // set up env
+    function makeInitialEnvironment() {
+        var env = new Environment();
+        // the usual first message...
+        env.set("hello", makeString("Hello world!"));
+        
+        //  built-in-functions
+        // TODO: make this programmatic...?
+        env.set("+", function() {
+                var sum=0;
+                for (var k in arguments) sum+=arguments[k];
+                return sum;
+        });
+        env.set("*", function() {
+                var product=1;
+                for (var k in arguments) product *=arguments[k];
+                return product;
+        });
+        return env;
+    }
+
+
+    // 'global' environment
+    var _env = makeInitialEnvironment();
+    var getEnvironment = this.getEnvironment = function () {
+        return _env;
+    };
+            
+    // create parse tree from expression
+    // @expl : list of tokens
+    // returns : one expression or value
+
+    // example expl input - [{"type":"symbol","value":"+"},1,[{"type":"symbol","value":"*"},5,2]]
+    var eval = this.eval = function ( expl, env ) {
+        //        var env = (env)?env:makeInitialEnvironment();
+        var env = (env)?env:getEnvironment();
+
+        // self-evaluating things like bools, numbers
+        function isSelfEvaluating(token) { return isNumber(token) || isBoolean(token) || isString(token); };
+        function evalSelfEvaluating(token) { return token; };
+        addExpressionType ("self-evaluating", isSelfEvaluating, evalSelfEvaluating);
+
+        function isString(token) { return typeof token == 'string'; };
+        function isSymbol(token) { return getTokenType(token) == 'symbol'; };
+        function isNumber(token) { return typeof token == 'number'; };
+        function isBoolean(token) {
+            return isSymbol(token) 
+                && (getTokenValue(token) == '#t' 
+                    || getTokenValue(token) =='#f')};
+        function getNumber(token) { return getTokenValue(token); };
+        function getString(token) { return getTokenValue(token); };
+        function getBoolean(token) { return '#t'==getTokenValue(token); };
+        function getSelfEvaluatingValue(token) { 
+            var atom;
+            if (isNumber(token)) {
+                return getNumber(token);
+            } else if (isBoolean(token)) {
+                return getBoolean(token);
+            } else if (isString(token)) {
+                return getString(token);
+            };
+            throw('ERROR:getSelfEvaluatingValue'+JSON.stringify(token)); 
+        };
+        
+        // helper function()
+        function isTaggedList ( expl, tag ) {
+            //            console.log("isTaggedList", expl[0], tag);
+            return Array.isArray(expl) && getTokenValue(expl[0]) == tag;
+        }
+
+        // variables
+        function isVariable(token){ return getTokenType(token) == 'symbol' 
+                && env.isDefined(getTokenValue(token)); };
+        function evalVariable(token){ return env.get(getTokenValue(token)); };
+        addExpressionType ("variable", isVariable, evalVariable);
+
+        // assignment - (set! <var> <value>)
+        function isAssignment ( expl ) { 
+            //            console.log("isAssignment", expl, isTaggedList(expl, 'set!'));
+            return isTaggedList(expl, 'set!');
+        };
+        function evalAssignment(expl, env) {
+            env.set(expl[1], expl[2]);
+            return "ok ";// + JSON.stringify(env.list());
+        }
+        addExpressionType ("isAssignment", isAssignment, evalAssignment);
+
+        // applications
+        function isApplication(sexp) { return Array.isArray(sexp); }
+        function evalApplication(expl, env) {
+            return apply( eval(getOperator(expl), env), 
+                          evalListOfValues(getOperands(expl), env));
+        };
+        addExpressionType ("application", isApplication, evalApplication);
+        
+        function getOperator(app) {
+            return app[0];
+        }
+
+        function getOperands(app) {
+            return app.slice(1);
+        }
+        
+        function evalListOfValues( list, env) {
+            if (list.length == 0) {
+                return [];
+            } else {
+                return [ eval (list[0], env) ].concat( 
+                    evalListOfValues ( list.slice(1), env));
+            }
+        }
+
+        /*
+          the core of the evaluator
+
+          primitive expressions - self-evaluating expressions, variables in env
+          special forms -
+              - quoted expressions (NOT HANDLED)
+              - assignment - computes value, updates environment (NOT YET HANDLED)
+              - if expression (NOT YET HANDLED)
+              - lambda (NOT YET HANDLED)
+              - begin (NOT YET HANDLED)
+              - cond ( NOT YET HANDLED)
+        */
+        for (var i=0;i<expressionTypes.length;i++) {
+            var test = expressionTypes[i].test,
+                evaluate = expressionTypes[i].evaluator;
+            if ( test(expl) ) {
+                return evaluate(expl,env);
+            }
+        }
+        // not handled
+        throw("Unknown expression type -- EVAL -- "+ JSON.stringify(expl));
+    };  // eval
+
+    // for adding types of objects the evaluator can handle at runtime
+    var expressionTypes = [];
+    var addExpressionType = this.addExpressionType = function ( type, test, evaluator ) {
+        expressionTypes.push ( { type:type, test:test, evaluator:evaluator} )
+        //            console.log("ADD EXPRESSION TYPE", type, expressionTypes);
+    }
+
+    function isPrimitiveProcedure( proc ) {
+        return typeof proc == 'function';
+    }
+    
+    // compound procedures are constructed from parameters,
+    // procedure bodies and environments
+    function makeCompoundProcedure ( parameters, body, env )  {
+        return {
+            parameters:parameters,
+            body: body,
+            environment: env
+        };
+    }
+    function isCompoundProcedure( proc ) {
+        return proc && proc.type == 'procedure';
+    }
+
+    // apply primitive and compound (multi-step) procedures
+    var apply = this.apply = function ( procedure, arguments ) {
+        if (isPrimitiveProcedure( procedure )) {
+            return procedure.apply({}, arguments);
+        } else if (isCompoundProcedure( procedure )) {
+            throw "TODO: apply compound procedure";
+        }else {
+            throw ("ERROR: apply uncaught::"+JSON.stringify(procedure)+"::"+arguments);
+        }
+    }
 }
 
 
@@ -356,6 +371,9 @@ function test (type, s) {
     var results = interpret(s);
     console.log("TEST",type,s,'=',JSON.stringify(results));
 }
+function logEnvironment () {
+    console.log(lisper.getEnvironment().list());
+}
 
 var lisper = new EWLang;
 
@@ -367,6 +385,10 @@ test('value in environment','hello');
 //test('value not defined in environment','no_hello');
 test('apply','(+ 1 2)');
 test('apply recurse','(+ 1 (* 5 2))');
+logEnvironment();
+test('assignment (set!)','(set! "age" 37)');
+test('assignment (set!)','(set! "weight" 135.6)');
+logEnvironment();
 /*
 var parentEnv = lisper.makeEnvironment();
 parentEnv.set('cat', 'Samuel');
