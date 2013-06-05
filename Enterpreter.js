@@ -271,7 +271,7 @@ function EWLang () {
         };
         function evalAssignment(expl, env) {
             env.set(expl[1], expl[2]);
-            return "ok ";// + JSON.stringify(env.list());
+            return "ok";// + JSON.stringify(env.list());
         }
         addExpressionType ("isAssignment", isAssignment, evalAssignment);
 
