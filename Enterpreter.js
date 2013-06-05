@@ -385,10 +385,12 @@ test('value in environment','hello');
 //test('value not defined in environment','no_hello');
 test('apply','(+ 1 2)');
 test('apply recurse','(+ 1 (* 5 2))');
-logEnvironment();
+//logEnvironment();
 test('assignment (set!)','(set! "age" 37)');
 test('assignment (set!)','(set! "weight" 135.6)');
-logEnvironment();
+test('value in environment','age');
+
+//logEnvironment();
 /*
 var parentEnv = lisper.makeEnvironment();
 parentEnv.set('cat', 'Samuel');
