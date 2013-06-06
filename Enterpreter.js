@@ -225,11 +225,6 @@ function EWLang () {
         //        var env = (env)?env:makeInitialEnvironment();
         var env = (env)?env:getEnvironment();
 
-        // self-evaluating things like bools, numbers
-        function isSelfEvaluating(token) { return isNumber(token) || isBoolean(token) || isString(token); };
-        function evalSelfEvaluating(token) { return token; };
-        addExpressionType ("self-evaluating", isSelfEvaluating, evalSelfEvaluating);
-
         function isString(token) { return typeof token == 'string'; };
         function isSymbol(token) { return getTokenType(token) == 'symbol'; };
         function isNumber(token) { return typeof token == 'number'; };
@@ -241,6 +236,7 @@ function EWLang () {
         function getString(token) { return getTokenValue(token); };
         function getBoolean(token) { return '#t'==getTokenValue(token); };
         function getSelfEvaluatingValue(token) { 
+console.log("getSelfEvaluatingValue", token);
             var atom;
             if (isNumber(token)) {
                 return getNumber(token);
@@ -252,6 +248,17 @@ function EWLang () {
             throw('ERROR:getSelfEvaluatingValue'+JSON.stringify(token)); 
         };
         
+        // self-evaluating things like bools, numbers
+        function isSelfEvaluating(token) { return isNumber(token) || isBoolean(token) || isString(token); };
+        function evalSelfEvaluating(token) { 
+            if (isBoolean(token)) { // output #t, #f as #t, #f
+
+                token.inspect = function () { return token.value; }
+            } 
+            return token; 
+        };
+        addExpressionType ("self-evaluating", isSelfEvaluating, evalSelfEvaluating);
+
         // helper function()
         function isTaggedList ( expl, tag ) {
             //            console.log("isTaggedList", expl[0], tag);
@@ -369,7 +376,7 @@ function interpret(s) {
 }
 function test (type, s) {
     var results = interpret(s);
-    console.log("TEST",type,s,'=',JSON.stringify(results));
+    console.log("TEST",type,s,'=',results);
 }
 function logEnvironment () {
     console.log(lisper.getEnvironment().list());
@@ -387,8 +394,10 @@ test('apply','(+ 1 2)');
 test('apply recurse','(+ 1 (* 5 2))');
 //logEnvironment();
 test('assignment (set!)','(set! "age" 37)');
-test('assignment (set!)','(set! "weight" 135.6)');
 test('value in environment','age');
+test('assignment (set!)','(set! "weight" 135.6)');
+test('value in environment','weight');
+test('value in environment','height');
 
 //logEnvironment();
 /*
