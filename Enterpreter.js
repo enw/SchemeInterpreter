@@ -22,47 +22,8 @@ function EWLang () {
 
 
     // environment in which to evaluate fxn
-    var makeEnvironment = this.makeEnvironment = function (parent) {
-        return new Environment(parent);
-    }
-    var Environment = function (parent) {
-        var entries = {};
-        // returns string, number, boolean, list or symbolic expression
-        function getValue(token) {
-            if (token.value) {
-                return token.value;
-            } else {
-                return token;
-            }
-        }
-        this.list = function () {
-            if (parent) {
-                var union = parent.list();
-                for (var i in entries) {
-                    union[i.name] = entries[i];
-                }
-                entries = union;
-            }
-            return entries;
-        }
-        this.isDefined = function( name ) {
-            return entries[name] != undefined;
-        }
-        this.set = function(name, value){
-            entries[name]=value;
-        };
-        this.get = function (name) {
-            if (entries[name]) {
-                return getValue(entries[name]);
-            } else {
-                if (parent) {
-                    return parent.get(name);
-                } else {
-                    return null;
-                }
-            }
-        }
-    }
+    var Environment = require ('./lib/Environment');
+
     // set up env
     function makeInitialEnvironment() {
         var env = new Environment();
@@ -82,7 +43,6 @@ function EWLang () {
         return env;
     }
 
-
     // 'global' environment
     var _env = makeInitialEnvironment();
     var getEnvironment = this.getEnvironment = function () {
@@ -95,8 +55,7 @@ function EWLang () {
 
     // example expl input - [{"type":"symbol","value":"+"},1,[{"type":"symbol","value":"*"},5,2]]
     var eval = this.eval = function ( expl, env ) {
-        //        var env = (env)?env:makeInitialEnvironment();
-        var env = (env)?env:getEnvironment();
+        var env = (env)?env:_env;
 
         function isString(token) { return typeof token == 'string'; };
         function isSymbol(token) { return getTokenType(token) == 'symbol'; };
