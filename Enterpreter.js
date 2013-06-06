@@ -45,14 +45,10 @@ function EWLang () {
 
     // 'global' environment
     var _env = makeInitialEnvironment();
-    var getEnvironment = this.getEnvironment = function () {
-        return _env;
-    };
             
     // create parse tree from expression
     // @expl : list of tokens
     // returns : one expression or value
-
     // example expl input - [{"type":"symbol","value":"+"},1,[{"type":"symbol","value":"*"},5,2]]
     var eval = this.eval = function ( expl, env ) {
         var env = (env)?env:_env;
@@ -201,43 +197,30 @@ console.log("getSelfEvaluatingValue", token);
 
 module.exports = EWLang;
 
+// just run tests if this is the main file
+if (!module.parent) {
+    console.log('Testing Environment...');
 
-function interpret(s) {
-    return lisper.eval(lisper.parse(s));
-//        return lisper.parse(s);
+    var lisper = new EWLang;
+
+    function test (type, s) {
+        function interpret(s) {
+            return lisper.eval(lisper.parse(s));
+        //        return lisper.parse(s);
+        }
+            var results = interpret(s);
+        console.log("TEST",type,s,'=',results);
+    }
+
+    test('number','1');
+    test('bool','#t');
+    test('bool','#f');
+    test('string','"hello, world!"');
+    test('apply','(+ 1 2)');
+    test('apply recurse','(+ 1 (* 5 2))');
+    test('assignment (set!)','(set! "age" 37)');
+    test('assignment (set!)','(set! "weight" 135.6)');
+    test('just-set value in environment (weight)','weight');
+    test('set value in environment','age');
+    //test('value not set in environment','height'); // triggers blocking error
 }
-function test (type, s) {
-    var results = interpret(s);
-    console.log("TEST",type,s,'=',results);
-}
-function logEnvironment () {
-    console.log(lisper.getEnvironment().list());
-}
-
-var lisper = new EWLang;
-
-test('number','1');
-test('bool','#t');
-test('bool','#f');
-test('string','"hello, world!"');
-test('apply','(+ 1 2)');
-test('apply recurse','(+ 1 (* 5 2))');
-test('assignment (set!)','(set! "age" 37)');
-test('assignment (set!)','(set! "weight" 135.6)');
-test('just-set value in environment (weight)','weight');
-test('set value in environment','age');
-//test('value not set in environment','height'); // triggers blocking error
-
-//logEnvironment();
-/*
-var parentEnv = lisper.makeEnvironment();
-parentEnv.set('cat', 'Samuel');
-
-// test environment
-var env = lisper.makeEnvironment(parentEnv);
-console.log('Environment',env);
-env.set('sayHello', function() {console.log('sayHello')});
-env.set('name', 'Todd Rundgren');
-env.set('age', 32);
-console.log('Environment',env.list());
-*/
