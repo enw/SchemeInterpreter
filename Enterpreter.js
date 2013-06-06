@@ -53,13 +53,11 @@ function EWLang () {
         function isString(token) { return typeof token == 'string'; };
         function isSymbol(token) { return getTokenType(token) == 'symbol'; };
         function isNumber(token) { return typeof token == 'number'; };
-        function makeSymbol ( type, value ) {
-            return { type:type, value:value };
+        function makeSymbol ( value ) {
+            return { type:'symbol', value:value };
         }
         function makeBooleanSymbol ( jsBool ) {
-            return makeSymbol ( 'symbol',
-                                (jsBool)?'#t':'#f'
-                              );
+            return makeSymbol ( (jsBool)?'#t':'#f' );
         };
         function isBoolean(token) {
             return isSymbol(token) 
@@ -131,6 +129,12 @@ function EWLang () {
             //console.log('isIf', expl);
             return isTaggedList(expl, 'if');
         }
+
+        // helper
+        function makeIf ( predicate, consequent, alternative ) {
+            return [ makeSymbol('if'), consequent, alternative ];
+        }
+
         function evalIf (expl, env) {
             function predicate ( expl ) {
                 return first( rest ( expl) );
@@ -183,7 +187,7 @@ function EWLang () {
           special forms -
               - quoted expressions 
               - assignment - computes value, updates environment
-              - if expression (NOT YET HANDLED)
+              - if expression
               - lambda (NOT YET HANDLED)
               - begin (NOT YET HANDLED)
               - cond ( NOT YET HANDLED)
