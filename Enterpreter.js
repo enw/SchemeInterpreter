@@ -389,15 +389,13 @@ test('bool','#t');
 test('bool','#f');
 test('string','"hello, world!"');
 test('value in environment','hello');
-//test('value not defined in environment','no_hello');
 test('apply','(+ 1 2)');
 test('apply recurse','(+ 1 (* 5 2))');
-//logEnvironment();
 test('assignment (set!)','(set! "age" 37)');
-test('value in environment','age');
 test('assignment (set!)','(set! "weight" 135.6)');
-test('value in environment','weight');
-test('value in environment','height');
+test('just-set value in environment (weight)','weight');
+test('set value in environment','age');
+//test('value not set in environment','height'); // triggers blocking error
 
 //logEnvironment();
 /*
