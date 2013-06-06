@@ -53,20 +53,30 @@ function EWLang () {
         function isString(token) { return typeof token == 'string'; };
         function isSymbol(token) { return getTokenType(token) == 'symbol'; };
         function isNumber(token) { return typeof token == 'number'; };
+        function makeSymbol ( type, value ) {
+            return { type:type, value:value };
+        }
+        function makeBooleanSymbol ( jsBool ) {
+            return makeSymbol ( 'symbol',
+                                (jsBool)?'#t':'#f'
+                              );
+        };
         function isBoolean(token) {
             return isSymbol(token) 
                 && (getTokenValue(token) == '#t' 
                     || getTokenValue(token) =='#f')};
         function getNumber(token) { return getTokenValue(token); };
         function getString(token) { return getTokenValue(token); };
-        function getBoolean(token) { return '#t'==getTokenValue(token); };
+        
+        // returns javascript boolean
+        function isTrue(token) { return '#t'==getTokenValue(token); };
+
         function getSelfEvaluatingValue(token) { 
-console.log("getSelfEvaluatingValue", token);
             var atom;
             if (isNumber(token)) {
                 return getNumber(token);
             } else if (isBoolean(token)) {
-                return getBoolean(token);
+                return isTrue(token);
             } else if (isString(token)) {
                 return getString(token);
             };
@@ -76,10 +86,12 @@ console.log("getSelfEvaluatingValue", token);
         // self-evaluating things like bools, numbers
         function isSelfEvaluating(token) { return isNumber(token) || isBoolean(token) || isString(token); };
         function evalSelfEvaluating(token) { 
+/*
             if (isBoolean(token)) { // output #t, #f as #t, #f
 
                 token.inspect = function () { return token.value; }
             } 
+*/
             return token; 
         };
         addExpressionType ("self-evaluating", isSelfEvaluating, evalSelfEvaluating);
@@ -112,7 +124,32 @@ console.log("getSelfEvaluatingValue", token);
             env.set(expl[1], expl[2]);
             return "ok";// + JSON.stringify(env.list());
         }
-        addExpressionType ("isAssignment", isAssignment, evalAssignment);
+        addExpressionType ("assignment", isAssignment, evalAssignment);
+
+        // if 
+        function isIf ( expl ) {
+            //console.log('isIf', expl);
+            return isTaggedList(expl, 'if');
+        }
+        function evalIf (expl, env) {
+            function predicate ( expl ) {
+                return first( rest ( expl) );
+            };
+            function consequent ( expl ) {
+                return first ( rest ( rest ( expl ) ) );
+            };
+            function alternative ( expl ) {
+                var alt = first ( rest ( rest ( rest ( expl ))));
+                return (alt)?alt:makeBooleanSymbol(false);
+            };
+
+            if ( isTrue ( eval (predicate ( expl ) ) )) {
+                return eval ( consequent ( expl ), env );
+            } else {
+                return eval ( alternative ( expl ), env );
+            }
+        }
+        addExpressionType ("if", isIf, evalIf);
 
         // applications
         function isApplication(sexp) { return Array.isArray(sexp); }
@@ -144,7 +181,7 @@ console.log("getSelfEvaluatingValue", token);
 
           primitive expressions - self-evaluating expressions, variables in env
           special forms -
-              - quoted expressions (NOT HANDLED)
+              - quoted expressions 
               - assignment - computes value, updates environment
               - if expression (NOT YET HANDLED)
               - lambda (NOT YET HANDLED)
@@ -203,7 +240,7 @@ module.exports = EWLang;
 
 // just run tests if this is the main file
 if (!module.parent) {
-    console.log('Testing Environment...');
+    console.log('Testing Enterpreter...');
 
     var lisper = new EWLang;
 
@@ -229,4 +266,9 @@ if (!module.parent) {
     //test('value not set in environment','height'); // triggers blocking error
     test('quote a number','(quote 1)');
     test('quote a list','(quote (1 2 3))');
+    test('if expression','(if #t "GOOD" "BAD")');
+    test('if expression','(if #f "BAD" "GOOD")');
+    test('if expression','(if #t (+ (* 3 (+ 3000  1) 5) ) "BAD")');
+    test('if expression','(if #f (+ 665 1) "GOOD" )');
+    test('if expression','(if #f (+ 665 1) )');
 }
