@@ -18,9 +18,6 @@ function EWLang () {
     // returns parse tree
     this.parse = require ('./lib/parser');
 
-    
-
-
     // environment in which to evaluate fxn
     var Environment = require ('./lib/Environment');
 
@@ -88,6 +85,8 @@ console.log("getSelfEvaluatingValue", token);
         addExpressionType ("self-evaluating", isSelfEvaluating, evalSelfEvaluating);
 
         // helper function()
+        function first ( list ) { return list[0]; };
+        function rest ( list ) { return list.slice(1); };
         function isTaggedList ( expl, tag ) {
             //            console.log("isTaggedList", expl[0], tag);
             return Array.isArray(expl) && getTokenValue(expl[0]) == tag;
@@ -98,6 +97,11 @@ console.log("getSelfEvaluatingValue", token);
                 && env.isDefined(getTokenValue(token)); };
         function evalVariable(token){ return env.get(getTokenValue(token)); };
         addExpressionType ("variable", isVariable, evalVariable);
+
+        // quoted - (quote <anything>)
+        function isQuote ( expl ) { return isTaggedList(expl, 'quote'); }
+        function evalQuote( expl, env ) { return first(rest ( expl )); }
+        addExpressionType ( "quote", isQuote, evalQuote );
 
         // assignment - (set! <var> <value>)
         function isAssignment ( expl ) { 
@@ -141,7 +145,7 @@ console.log("getSelfEvaluatingValue", token);
           primitive expressions - self-evaluating expressions, variables in env
           special forms -
               - quoted expressions (NOT HANDLED)
-              - assignment - computes value, updates environment (NOT YET HANDLED)
+              - assignment - computes value, updates environment
               - if expression (NOT YET HANDLED)
               - lambda (NOT YET HANDLED)
               - begin (NOT YET HANDLED)
@@ -223,4 +227,6 @@ if (!module.parent) {
     test('just-set value in environment (weight)','weight');
     test('set value in environment','age');
     //test('value not set in environment','height'); // triggers blocking error
+    test('quote a number','(quote 1)');
+    test('quote a list','(quote (1 2 3))');
 }
