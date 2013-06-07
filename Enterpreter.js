@@ -48,6 +48,7 @@ function EWLang () {
     // returns : one expression or value
     // example expl input - [{"type":"symbol","value":"+"},1,[{"type":"symbol","value":"*"},5,2]]
     var eval = this.eval = function ( expl, env ) {
+console.log("eval this",expl);
         var env = (env)?env:_env;
 
         function isString(token) { return typeof token == 'string'; };
@@ -66,6 +67,18 @@ function EWLang () {
         function getNumber(token) { return getTokenValue(token); };
         function getString(token) { return getTokenValue(token); };
         
+        // constructors
+        function makeProcedure ( parameters, body, env ) {
+            return { type: 'procedure',
+                     parameters:parameters, 
+                     body: body,
+                     env: env
+                   };
+        };
+        function isProcedure ( expl ) {
+            return exp && exp.type && exp.type == 'procedure';
+        };
+
         // returns javascript boolean
         function isTrue(token) { return '#t'==getTokenValue(token); };
 
@@ -98,7 +111,7 @@ function EWLang () {
         function first ( list ) { return list[0]; };
         function rest ( list ) { return list.slice(1); };
         function isTaggedList ( expl, tag ) {
-            //            console.log("isTaggedList", expl[0], tag);
+//            console.log("isTaggedList", expl[0], tag);
             return Array.isArray(expl) && getTokenValue(expl[0]) == tag;
         }
 
@@ -155,6 +168,25 @@ function EWLang () {
         }
         addExpressionType ("if", isIf, evalIf);
 
+        // lambda
+        function isLambda ( sexp ) { 
+//console.log("isLambda", sexp, isTaggedList(expl, 'lambda'));
+return isTaggedList(expl, 'lambda'); };
+        function evalLambda ( expl, env ) {
+            function lambda_parameters ( expl ) {
+console.log("lambda_parameters", expl);
+                return first ( rest ( expl ) );
+            };
+            function lambda_body ( expl ) {
+                return first ( rest ( rest ( expl ) ) );
+            };
+            return makeCompoundProcedure ( lambda_parameters( expl ), 
+                                   lambda_body ( expl ),
+                                   env);
+        }
+        addExpressionType ("lambda", isLambda, evalLambda);
+
+
         // applications
         function isApplication(sexp) { return Array.isArray(sexp); }
         function evalApplication(expl, env) {
@@ -188,7 +220,7 @@ function EWLang () {
               - quoted expressions 
               - assignment - computes value, updates environment
               - if expression
-              - lambda (NOT YET HANDLED)
+              - lambda
               - begin (NOT YET HANDLED)
               - cond ( NOT YET HANDLED)
         */
@@ -196,7 +228,10 @@ function EWLang () {
             var test = expressionTypes[i].test,
                 evaluate = expressionTypes[i].evaluator;
             if ( test(expl) ) {
+//console.log("***",expl,"is a",expressionTypes[i].type);
                 return evaluate(expl,env);
+            } else {
+//console.log("***",expl,"is not a",expressionTypes[i].type);
             }
         }
         // not handled
@@ -218,13 +253,14 @@ function EWLang () {
     // procedure bodies and environments
     function makeCompoundProcedure ( parameters, body, env )  {
         return {
+            type: 'procedure',
             parameters:parameters,
             body: body,
             environment: env
         };
     }
     function isCompoundProcedure( proc ) {
-        return proc && proc.type == 'procedure';
+        return proc && proc.type && proc.type == 'procedure';
     }
 
     // apply primitive and compound (multi-step) procedures
@@ -257,6 +293,8 @@ if (!module.parent) {
         console.log("TEST",type,s,'=',results);
     }
 
+
+/*
     test('number','1');
     test('bool','#t');
     test('bool','#f');
@@ -275,4 +313,6 @@ if (!module.parent) {
     test('if expression','(if #t (+ (* 3 (+ 3000  1) 5) ) "BAD")');
     test('if expression','(if #f (+ 665 1) "GOOD" )');
     test('if expression','(if #f (+ 665 1) )');
+*/
+    test('lambda','(lambda (x) (+ 3 x))');
 }
