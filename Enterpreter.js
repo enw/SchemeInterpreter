@@ -1,7 +1,7 @@
 /*
 Based on (metacircular Scheme) evaluator in Structure and
-Interpretation of Computer Programs (SICP) -
-http://mitpress.mit.edu/sicp/full-text/book/book-Z-H-26.html#%_sec_4.1.1
+Interpretation of Computer Programs (SICP) but not so meta! 
+    http://mitpress.mit.edu/sicp/full-text/book/book-Z-H-26.html#%_sec_4.1.1
 
 The model has two basic parts:
 
@@ -20,7 +20,15 @@ function EWLang () {
 
     // environment in which to evaluate fxn
     var Environment = require ('./lib/Environment');
-
+        
+    // helper function()
+    function first ( list ) { return list[0]; };
+    function rest ( list ) { return list.slice(1); };
+    function isTaggedList ( expl, tag ) {
+        //        console.log("isTaggedList", expl[0], tag);
+        return Array.isArray(expl) && getTokenValue(expl[0]) == tag;
+    }
+        
     // set up env
     function makeInitialEnvironment() {
         var env = new Environment();
@@ -43,14 +51,6 @@ function EWLang () {
     // 'global' environment
     var _env = makeInitialEnvironment();
             
-    // create parse tree from expression
-    // @expl : list of tokens
-    // returns : one expression or value
-    // example expl input - [{"type":"symbol","value":"+"},1,[{"type":"symbol","value":"*"},5,2]]
-    var eval = this.eval = function ( expl, env ) {
-console.log("eval this",expl);
-        var env = (env)?env:_env;
-
         function isString(token) { return typeof token == 'string'; };
         function isSymbol(token) { return getTokenType(token) == 'symbol'; };
         function isNumber(token) { return typeof token == 'number'; };
@@ -75,12 +75,37 @@ console.log("eval this",expl);
                      env: env
                    };
         };
-        function isProcedure ( expl ) {
+        function isProcedure ( exp ) {
             return exp && exp.type && exp.type == 'procedure';
         };
 
         // returns javascript boolean
         function isTrue(token) { return '#t'==getTokenValue(token); };
+
+        function getOperator(app) {
+            return app[0];
+        }
+
+        function getOperands(app) {
+            return app.slice(1);
+        }
+
+        function evalListOfValues( list, env) {
+            if (list.length == 0) {
+                return [];
+            } else {
+                return [ eval (list[0], env) ].concat( 
+                    evalListOfValues ( list.slice(1), env));
+            }
+        }
+
+    // create parse tree from expression
+    // @expl : list of tokens
+    // returns : one expression or value
+    // example expl input - [{"type":"symbol","value":"+"},1,[{"type":"symbol","value":"*"},5,2]]
+    var eval = this.eval = function ( expl, env ) {
+//console.log("eval this",expl);
+        var env = (env)?env:_env;
 
         function getSelfEvaluatingValue(token) { 
             var atom;
@@ -94,124 +119,6 @@ console.log("eval this",expl);
             throw('ERROR:getSelfEvaluatingValue'+JSON.stringify(token)); 
         };
         
-        // self-evaluating things like bools, numbers
-        function isSelfEvaluating(token) { return isNumber(token) || isBoolean(token) || isString(token); };
-        function evalSelfEvaluating(token) { 
-/*
-            if (isBoolean(token)) { // output #t, #f as #t, #f
-
-                token.inspect = function () { return token.value; }
-            } 
-*/
-            return token; 
-        };
-        addExpressionType ("self-evaluating", isSelfEvaluating, evalSelfEvaluating);
-
-        // helper function()
-        function first ( list ) { return list[0]; };
-        function rest ( list ) { return list.slice(1); };
-        function isTaggedList ( expl, tag ) {
-//            console.log("isTaggedList", expl[0], tag);
-            return Array.isArray(expl) && getTokenValue(expl[0]) == tag;
-        }
-
-        // variables
-        function isVariable(token){ return getTokenType(token) == 'symbol' 
-                && env.isDefined(getTokenValue(token)); };
-        function evalVariable(token){ return env.get(getTokenValue(token)); };
-        addExpressionType ("variable", isVariable, evalVariable);
-
-        // quoted - (quote <anything>)
-        function isQuote ( expl ) { return isTaggedList(expl, 'quote'); }
-        function evalQuote( expl, env ) { return first(rest ( expl )); }
-        addExpressionType ( "quote", isQuote, evalQuote );
-
-        // assignment - (set! <var> <value>)
-        function isAssignment ( expl ) { 
-            //            console.log("isAssignment", expl, isTaggedList(expl, 'set!'));
-            return isTaggedList(expl, 'set!');
-        };
-        function evalAssignment(expl, env) {
-            env.set(expl[1], expl[2]);
-            return "ok";// + JSON.stringify(env.list());
-        }
-        addExpressionType ("assignment", isAssignment, evalAssignment);
-
-        // if 
-        function isIf ( expl ) {
-            //console.log('isIf', expl);
-            return isTaggedList(expl, 'if');
-        }
-
-        // helper
-        function makeIf ( predicate, consequent, alternative ) {
-            return [ makeSymbol('if'), consequent, alternative ];
-        }
-
-        function evalIf (expl, env) {
-            function predicate ( expl ) {
-                return first( rest ( expl) );
-            };
-            function consequent ( expl ) {
-                return first ( rest ( rest ( expl ) ) );
-            };
-            function alternative ( expl ) {
-                var alt = first ( rest ( rest ( rest ( expl ))));
-                return (alt)?alt:makeBooleanSymbol(false);
-            };
-
-            if ( isTrue ( eval (predicate ( expl ) ) )) {
-                return eval ( consequent ( expl ), env );
-            } else {
-                return eval ( alternative ( expl ), env );
-            }
-        }
-        addExpressionType ("if", isIf, evalIf);
-
-        // lambda
-        function isLambda ( sexp ) { 
-//console.log("isLambda", sexp, isTaggedList(expl, 'lambda'));
-return isTaggedList(expl, 'lambda'); };
-        function evalLambda ( expl, env ) {
-            function lambda_parameters ( expl ) {
-console.log("lambda_parameters", expl);
-                return first ( rest ( expl ) );
-            };
-            function lambda_body ( expl ) {
-                return first ( rest ( rest ( expl ) ) );
-            };
-            return makeCompoundProcedure ( lambda_parameters( expl ), 
-                                   lambda_body ( expl ),
-                                   env);
-        }
-        addExpressionType ("lambda", isLambda, evalLambda);
-
-
-        // applications
-        function isApplication(sexp) { return Array.isArray(sexp); }
-        function evalApplication(expl, env) {
-            return apply( eval(getOperator(expl), env), 
-                          evalListOfValues(getOperands(expl), env));
-        };
-        addExpressionType ("application", isApplication, evalApplication);
-        
-        function getOperator(app) {
-            return app[0];
-        }
-
-        function getOperands(app) {
-            return app.slice(1);
-        }
-        
-        function evalListOfValues( list, env) {
-            if (list.length == 0) {
-                return [];
-            } else {
-                return [ eval (list[0], env) ].concat( 
-                    evalListOfValues ( list.slice(1), env));
-            }
-        }
-
         /*
           the core of the evaluator
 
@@ -227,11 +134,12 @@ console.log("lambda_parameters", expl);
         for (var i=0;i<expressionTypes.length;i++) {
             var test = expressionTypes[i].test,
                 evaluate = expressionTypes[i].evaluator;
-            if ( test(expl) ) {
+            if ( test(expl, env) ) {
 //console.log("***",expl,"is a",expressionTypes[i].type);
                 return evaluate(expl,env);
             } else {
 //console.log("***",expl,"is not a",expressionTypes[i].type);
+//console.log("***","is not a",expressionTypes[i].type);
             }
         }
         // not handled
@@ -244,6 +152,93 @@ console.log("lambda_parameters", expl);
         expressionTypes.push ( { type:type, test:test, evaluator:evaluator} )
         //            console.log("ADD EXPRESSION TYPE", type, expressionTypes);
     }
+
+    // self-evaluating things like bools, numbers
+    function isSelfEvaluating(token) { return isNumber(token) || isBoolean(token) || isString(token); };
+    function evalSelfEvaluating(token) { 
+        return token; 
+    };
+    addExpressionType ("self-evaluating", isSelfEvaluating, evalSelfEvaluating);
+
+    // variables
+    function isVariable(token, env){ return getTokenType(token) == 'symbol' 
+            && env.isDefined(getTokenValue(token)); };
+    function evalVariable(token, env){ return env.get(getTokenValue(token)); };
+    addExpressionType ("variable", isVariable, evalVariable);
+
+    // quoted - (quote <anything>)
+    function isQuote ( expl ) { return isTaggedList(expl, 'quote'); }
+    function evalQuote( expl, env ) { return first(rest ( expl )); }
+    addExpressionType ( "quote", isQuote, evalQuote );
+
+    // assignment - (set! <var> <value>)
+    function isAssignment ( expl ) { 
+        //            console.log("isAssignment", expl, isTaggedList(expl, 'set!'));
+        return isTaggedList(expl, 'set!');
+    };
+    function evalAssignment(expl, env) {
+        env.set(expl[1], expl[2]);
+        return "ok";// + JSON.stringify(env.list());
+    }
+    addExpressionType ("assignment", isAssignment, evalAssignment);
+
+    // if 
+    function isIf ( expl ) {
+        //console.log('isIf', expl);
+        return isTaggedList(expl, 'if');
+    }
+
+    // helper
+    function makeIf ( predicate, consequent, alternative ) {
+        return [ makeSymbol('if'), consequent, alternative ];
+    }
+
+    function evalIf (expl, env) {
+        function predicate ( expl ) {
+            return first( rest ( expl) );
+        };
+        function consequent ( expl ) {
+            return first ( rest ( rest ( expl ) ) );
+        };
+        function alternative ( expl ) {
+            var alt = first ( rest ( rest ( rest ( expl ))));
+            return (alt)?alt:makeBooleanSymbol(false);
+        };
+
+        if ( isTrue ( eval (predicate ( expl ) ) )) {
+            return eval ( consequent ( expl ), env );
+        } else {
+            return eval ( alternative ( expl ), env );
+        }
+    }
+    addExpressionType ("if", isIf, evalIf);
+
+    // lambda
+    function isLambda ( sexp ) { 
+        return isTaggedList(sexp, 'lambda'); 
+    }
+    function evalLambda ( expl, env ) {
+        function lambda_parameters ( expl ) {
+//            console.log("lambda_parameters", expl);
+            return first ( rest ( expl ) );
+        };
+        function lambda_body ( expl ) {
+            return first ( rest ( rest ( expl ) ) );
+        };
+        return makeCompoundProcedure ( lambda_parameters( expl ), 
+                               lambda_body ( expl ),
+                               env);
+    }
+    addExpressionType ("lambda", isLambda, evalLambda);
+
+
+    // applications
+    function isApplication(sexp) { return Array.isArray(sexp); }
+    function evalApplication(expl, env) {
+        return apply( eval(getOperator(expl), env), 
+                      evalListOfValues(getOperands(expl), env));
+    };
+    addExpressionType ("application", isApplication, evalApplication);
 
     function isPrimitiveProcedure( proc ) {
         return typeof proc == 'function';
@@ -294,7 +289,7 @@ if (!module.parent) {
     }
 
 
-/*
+
     test('number','1');
     test('bool','#t');
     test('bool','#f');
@@ -313,6 +308,5 @@ if (!module.parent) {
     test('if expression','(if #t (+ (* 3 (+ 3000  1) 5) ) "BAD")');
     test('if expression','(if #f (+ 665 1) "GOOD" )');
     test('if expression','(if #f (+ 665 1) )');
-*/
     test('lambda','(lambda (x) (+ 3 x))');
 }
