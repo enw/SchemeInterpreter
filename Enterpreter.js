@@ -285,7 +285,7 @@ if (!module.parent) {
         //        return lisper.parse(s);
         }
             var results = interpret(s);
-        console.log("TEST",type,s,'=',results);
+        console.log("TEST",type,s,'=',JSON.stringify(results));
     }
 
 
