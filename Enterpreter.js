@@ -25,7 +25,6 @@ function EWLang () {
     function first ( list ) { return list[0]; };
     function rest ( list ) { return list.slice(1); };
     function isTaggedList ( expl, tag ) {
-        //        console.log("isTaggedList", expl[0], tag);
         return Array.isArray(expl) && getTokenValue(expl[0]) == tag;
     }
         
@@ -67,18 +66,6 @@ function EWLang () {
         function getNumber(token) { return getTokenValue(token); };
         function getString(token) { return getTokenValue(token); };
         
-        // constructors
-        function makeProcedure ( parameters, body, env ) {
-            return { type: 'procedure',
-                     parameters:parameters, 
-                     body: body,
-                     env: env
-                   };
-        };
-        function isProcedure ( exp ) {
-            return exp && exp.type && exp.type == 'procedure';
-        };
-
         // returns javascript boolean
         function isTrue(token) { return '#t'==getTokenValue(token); };
 
@@ -131,17 +118,16 @@ function EWLang () {
               - begin (NOT YET HANDLED)
               - cond ( NOT YET HANDLED)
         */
+        var handled = false;
         for (var i=0;i<expressionTypes.length;i++) {
             var test = expressionTypes[i].test,
                 evaluate = expressionTypes[i].evaluator;
             if ( test(expl, env) ) {
-//console.log("***",expl,"is a",expressionTypes[i].type);
+                handled = true;
                 return evaluate(expl,env);
-            } else {
-//console.log("***",expl,"is not a",expressionTypes[i].type);
-//console.log("***","is not a",expressionTypes[i].type);
-            }
+            } 
         }
+
         // not handled
         throw("Unknown expression type -- EVAL -- "+ JSON.stringify(expl));
     };  // eval
@@ -217,9 +203,8 @@ function EWLang () {
     function isLambda ( sexp ) { 
         return isTaggedList(sexp, 'lambda'); 
     }
-    function evalLambda ( expl, env ) {
+    function makeLambda ( expl, env ) {
         function lambda_parameters ( expl ) {
-//            console.log("lambda_parameters", expl);
             return first ( rest ( expl ) );
         };
         function lambda_body ( expl ) {
@@ -229,7 +214,7 @@ function EWLang () {
                                lambda_body ( expl ),
                                env);
     }
-    addExpressionType ("lambda", isLambda, evalLambda);
+    addExpressionType ('lambda', isLambda, makeLambda);
 
 
     // applications
@@ -258,12 +243,26 @@ function EWLang () {
         return proc && proc.type && proc.type == 'procedure';
     }
 
+    // is this modifying, changing the proc and environment rather than
+    // just applying it?
+    function applyLambda (proc, arguments) {
+        // extend environment with arguments
+        var env = proc.environment;
+        for (var i=0;i<arguments.length;i++) {
+            env.set(proc.parameters[i].value, arguments[i])
+        };
+        return eval(proc.body, env);
+//        return proc.environment.list();
+    }
+
     // apply primitive and compound (multi-step) procedures
     var apply = this.apply = function ( procedure, arguments ) {
         if (isPrimitiveProcedure( procedure )) {
+            // just apply the procedure
             return procedure.apply({}, arguments);
         } else if (isCompoundProcedure( procedure )) {
-            throw "TODO: apply compound procedure";
+            console.log("TODO:replace applyLambda with evalSequence!");
+            return applyLambda(procedure, arguments);
         }else {
             throw ("ERROR: apply uncaught::"+JSON.stringify(procedure)+"::"+arguments);
         }
@@ -282,10 +281,10 @@ if (!module.parent) {
     function test (type, s) {
         function interpret(s) {
             return lisper.eval(lisper.parse(s));
-        //        return lisper.parse(s);
+            //             return lisper.parse(s);
         }
             var results = interpret(s);
-        console.log("TEST",type,s,'=',JSON.stringify(results));
+        console.log("TEST",type,s,'=',results);
     }
 
 
@@ -308,5 +307,7 @@ if (!module.parent) {
     test('if expression','(if #t (+ (* 3 (+ 3000  1) 5) ) "BAD")');
     test('if expression','(if #f (+ 665 1) "GOOD" )');
     test('if expression','(if #f (+ 665 1) )');
+
     test('lambda','(lambda (x) (+ 3 x))');
+    test('eval lambda - should return 6','((lambda (x) (+ 3 x)) 3)');
 }
