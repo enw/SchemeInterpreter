@@ -1,0 +1,26 @@
+{
+  "name": "Enterpreter",
+  "version": "0.0.0",
+  "description": "SICP-inspired Scheme interpreter written in JavaScript",
+  "main": "Enterpreter.js",
+  "dependencies": {},
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/enw/enterpreter.git"
+  },
+  "keywords": [
+    "scheme",
+    "javascript",
+    "interpreter",
+    "eval",
+    "apply"
+  ],
+  "author": "Elliot Winard <enw@caveteen.com>",
+  "license": "MIT",
+  "readmeFilename": "README.md",
+  "gitHead": "60aa71224f081ebafaf0321ec8f98b33a51486f1"
+}
