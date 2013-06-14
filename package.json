@@ -4,9 +4,11 @@
   "description": "SICP-inspired Scheme interpreter written in JavaScript",
   "main": "Enterpreter.js",
   "dependencies": {},
-  "devDependencies": {},
+  "devDependencies": {
+      "jasmine-node-karma": "1.6.1"
+  },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jasmine-node-karma --autotest ./spec"
   },
   "repository": {
     "type": "git",

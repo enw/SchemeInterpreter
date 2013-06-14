@@ -80,7 +80,7 @@ function EWLang() {
     function getString(token) { return getTokenValue(token); }
     
     // returns javascript boolean
-    function isTrue(token) { return '#t' === getTokenValue(token); }
+    this.isTrue = function isTrue(token) { return '#t' === getTokenValue(token); }
 
     function getOperator(app) {
         return app[0];
@@ -109,7 +109,7 @@ function EWLang() {
             } else if (isString(token)) {
                 return getString(token);
             }
-            throw ('ERROR:getSelfEvaluateuatingValue' + JSON.stringify(token));
+            throw ('ERROR:getSelfEvaluatingValue' + JSON.stringify(token));
         }
         
         /*
@@ -302,11 +302,11 @@ if (!module.parent) {
     console.log('Testing Enterpreter...');
 
 
-    test('number', '1');
-    test('bool', '#t');
-    test('bool', '#f');
-    test('string', '"hello, world!"');
-    test('apply', '(+ 1 2)');
+    // test('number', '1');
+    // test('bool', '#t');
+    // test('bool', '#f');
+    // test('string', '"hello, world!"');
+    // test('apply', '(+ 1 2)');
     test('apply recurse', '(+1(*5 2))');
     test('assignment(set!)', '(set! "age" 37)');
     test('assignment(set!)', '(set! "weight" 135.6)');
