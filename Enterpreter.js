@@ -45,7 +45,7 @@ function EWLang() {
         
     // built-in-functions
     // TODO: make this programmatic...?
-    _env.set("+", function () {
+    _env.set('+', function () {
         var sum = 0,
             i;
         for (i = 0; i < arguments.length; i += 1) {
@@ -53,10 +53,10 @@ function EWLang() {
         }
         return sum;
     });
-    _env.set("*", function () {
+    _env.set('*', function () {
         var product = 1,
             i;
-        for (i = 0; i < arguments; i += 1) {
+        for (i = 0; i < arguments.length; i += 1) {
             product *= arguments[i];
         }
         return product;
@@ -138,7 +138,7 @@ function EWLang() {
         }
 
         // not handled
-        throw ("Unknown expression type -- EVALUATE -- " + JSON.stringify(expl));
+        throw new Error(EWLang.prototype.ERROR.UNKNOWN_EXPRESSION_TYPE);
     };  // evaluate
 
     // self-evaluateuating things like bools, numbers
@@ -279,8 +279,12 @@ function EWLang() {
             throw ("ERROR: apply uncaught::" + JSON.stringify(procedure) + "::" + args);
         }
     };
-}
+} // EWLang
 
+// 
+EWLang.prototype.ERROR = {
+        UNKNOWN_EXPRESSION_TYPE: "Unknown expression type"
+};
 
 module.exports = EWLang;
 
@@ -307,14 +311,14 @@ if (!module.parent) {
     // test('bool', '#f');
     // test('string', '"hello, world!"');
     // test('apply', '(+ 1 2)');
-    test('apply recurse', '(+1(*5 2))');
-    test('assignment(set!)', '(set! "age" 37)');
-    test('assignment(set!)', '(set! "weight" 135.6)');
-    test('just-set value in environment(weight)', 'weight');
-    test('set value in environment', 'age');
+    // test('apply recurse', '(+1(*5 2))');
+    //test('assignment(set!)', '(set! "age" 37)');
+    //    test('assignment(set!)', '(set! "weight" 135.6)');
+    // test('just-set value in environment(weight)', 'weight');
+    // test('set value in environment', 'age');
     //test('value not set in environment', 'height'); // triggers blocking error
-    test('quote a number', '(quote 1)');
-    test('quote a list', '(quote(1 2 3))');
+    //test('quote a number', '(quote 1)');
+    //    test('quote a list', '(quote(1 2 3))');
     test('if expression', '(if #t "GOOD" "BAD")');
     test('if expression', '(if #f "BAD" "GOOD")');
     test('if expression', '(if #t(+(* 3(+ 3000  1) 5)) "BAD")');
