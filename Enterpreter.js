@@ -13,10 +13,16 @@ The model has two basic parts:
 
 function EWLang() {
     "use strict";
-    
+
+    // helper
+    function getErrorString(which, details) {
+        return EWLang.prototype.ERROR[which] + (details) ? ( ' - ' + details ) : '';
+    }
+
     // get token value, type
     function getTokenType(tok) {return tok.type; }
     function getTokenValue(tok) {return tok.value; }
+    function isTrue(token) { return '#t' === getTokenValue(token); }
 
     // returns parse tree
     this.parse = require('./lib/parser');
@@ -80,7 +86,7 @@ function EWLang() {
     function getString(token) { return getTokenValue(token); }
     
     // returns javascript boolean
-    this.isTrue = function isTrue(token) { return '#t' === getTokenValue(token); }
+    this.isTrue = isTrue;
 
     function getOperator(app) {
         return app[0];
@@ -138,6 +144,7 @@ function EWLang() {
         }
 
         // not handled
+//        throw new Error(EWLang.prototype.ERROR.UNKNOWN_EXPRESSION_TYPE);
         throw new Error(EWLang.prototype.ERROR.UNKNOWN_EXPRESSION_TYPE);
     };  // evaluate
 
@@ -165,8 +172,8 @@ function EWLang() {
         return isTaggedList(expl, 'set!');
     }
     function evaluateAssignment(expl, env) {
-        env.set(expl[1], expl[2]);
-        return "ok";// + JSON.stringify(env.list());
+        return env.set(expl[1], expl[2]);
+//        return "ok";// + JSON.stringify(env.list());
     }
     addExpressionType("assignment", isAssignment, evaluateAssignment);
 
@@ -283,48 +290,8 @@ function EWLang() {
 
 // 
 EWLang.prototype.ERROR = {
-        UNKNOWN_EXPRESSION_TYPE: "Unknown expression type"
+        UNKNOWN_EXPRESSION_TYPE: "Unknown expression type - EVAL",
+        UNBOUND_VARIABLE: "Unbound Variable - EVAL"
 };
 
 module.exports = EWLang;
-
-// tests
-var lisper = new EWLang();
-function test(type, s) {
-    "use strict";
-
-    function interpret(s) {
-        return lisper.evaluate(lisper.parse(s));
-        //             return lisper.parse(s);
-    }
-    var results = interpret(s);
-    console.log("TEST", type, s, '=', results);
-}
-
-// just run tests if this is the main file
-if (!module.parent) {
-    console.log('Testing Enterpreter...');
-
-
-    // test('number', '1');
-    // test('bool', '#t');
-    // test('bool', '#f');
-    // test('string', '"hello, world!"');
-    // test('apply', '(+ 1 2)');
-    // test('apply recurse', '(+1(*5 2))');
-    //test('assignment(set!)', '(set! "age" 37)');
-    //    test('assignment(set!)', '(set! "weight" 135.6)');
-    // test('just-set value in environment(weight)', 'weight');
-    // test('set value in environment', 'age');
-    //test('value not set in environment', 'height'); // triggers blocking error
-    //test('quote a number', '(quote 1)');
-    //    test('quote a list', '(quote(1 2 3))');
-    test('if expression', '(if #t "GOOD" "BAD")');
-    test('if expression', '(if #f "BAD" "GOOD")');
-    test('if expression', '(if #t(+(* 3(+ 3000  1) 5)) "BAD")');
-    test('if expression', '(if #f(+ 665 1) "GOOD")');
-    test('if expression', '(if #f(+ 665 1))');
-
-    test('lambda', '(lambda(x)(+ 3 x))');
-    test('evaluate lambda - should return 6', '((lambda(x)(+ 3 x)) 3)');
-}
