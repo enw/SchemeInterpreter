@@ -54,7 +54,7 @@ function EWLang() {
         
     // built-in-functions
     // TODO: make this programmatic...?
-    _env.set('+', function () {
+    _env.defineVariable('+', function () {
         var sum = 0,
             i;
         for (i = 0; i < arguments.length; i += 1) {
@@ -62,7 +62,7 @@ function EWLang() {
         }
         return sum;
     });
-    _env.set('*', function () {
+    _env.defineVariable('*', function () {
         var product = 1,
             i;
         for (i = 0; i < arguments.length; i += 1) {
@@ -160,8 +160,8 @@ function EWLang() {
 
     // variables
     function isVariable(token, env) { return getTokenType(token) === 'symbol'
-            && env.isDefined(getTokenValue(token)); }
-    function evaluateVariable(token, env) { return env.get(getTokenValue(token)); }
+            && env.lookupVariableValue(getTokenValue(token)); }
+    function evaluateVariable(token, env) { return env.lookupVariableValue(getTokenValue(token)); }
     addExpressionType("variable", isVariable, evaluateVariable);
 
     // quoted -(quote <anything>)
@@ -175,7 +175,7 @@ function EWLang() {
         return isTaggedList(expl, 'set!');
     }
     function evaluateAssignment(expl, env) {
-        return env.set(expl[1], expl[2]);
+        return env.setVariableValue(expl[1], expl[2]);
 //        return "ok";// + JSON.stringify(env.list());
     }
     addExpressionType("assignment", isAssignment, evaluateAssignment);
@@ -272,7 +272,7 @@ function EWLang() {
         var env = proc.environment,
             i;
         for (i = 0; i < args.length; i += 1) {
-            env.set(proc.parameters[i].value, args[i]);
+            env.defineVariable(proc.parameters[i].value, args[i]);
         }
         return evaluate(proc.body, env);
 //        return proc.environment.list();
