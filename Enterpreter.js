@@ -22,7 +22,10 @@ function EWLang() {
     // get token value, type
     function getTokenType(tok) {return tok.type; }
     function getTokenValue(tok) {return tok.value; }
-    function isTrue(token) { return '#t' === getTokenValue(token); }
+    
+    // for conditionals, we accept anything to be true that is not the explicit 'false' object
+    function isFalse(token) { return '#f' === getTokenValue(token); }
+    function isTrue(token) { return !isFalse(token); }
 
     // returns parse tree
     this.parse = require('./lib/parser');
