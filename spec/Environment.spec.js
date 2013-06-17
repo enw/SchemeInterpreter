@@ -27,7 +27,7 @@ describe('Environment Suite', function () {
            expect(env.lookupVariableValue('foo')).toBe('bar');
        });
 
-    it('(extend-environment <variables> <values> <base-env>) returns new environment.  consisting of a new frame in which the symbols in the list <variables> are bound to the corresponding elements in the list <values>, where the enclosing environment is the environment <base-env>.',
+    it('constructor <base-env> (extending another constructor)- returns new environment.  consisting of a new frame in which the symbols in the list <variables> are bound to the corresponding elements in the list <values>, where the enclosing environment is the environment <base-env>.',
        function() {
            var env = new Environment();
            env.defineVariable('age', 32);
@@ -36,7 +36,7 @@ describe('Environment Suite', function () {
            expect(env.lookupVariableValue('age')).toBe(32);
        });
 
-    it('(set-variable-value! <var> <value> <env>) changes the binding of the variable <var> in the environment <env> so that the variable is now bound to the value <value>, or signals an error if the variable is unbound.',
+    it('setVariableValue <var> <value> - changes the binding of the variable <var> in the environment <env> so that the variable is now bound to the value <value>, or signals an error if the variable is unbound.',
        function() {
            var env = new Environment();
            env.defineVariable('age', 32);
