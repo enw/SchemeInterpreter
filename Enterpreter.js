@@ -260,6 +260,7 @@ function EWLang() {
     }
     addExpressionType("application", isApplication, evaluateApplication);
 
+    // different than in SICP, where it's a tagged list starting with 'primitive'
     function isPrimitiveProcedure(proc) {
         return typeof proc === 'function';
     }
