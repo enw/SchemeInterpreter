@@ -1,14 +1,14 @@
 /*jslint node:true nomen:true */
 /*
-Based on (metacircular Scheme) evaluateuator in Structure and
+Based on (metacircular Scheme) evaluator in Structure and
 Interpretation of Computer Programs (SICP) but not so meta! 
     http://mitpress.mit.edu/sicp/full-text/book/book-Z-H-26.html#%_sec_4.1.1
 
 The model has two basic parts:
 
-1. To evaluateuate a combination (a compound expression other than a special form), evaluateuate the subexpressions and then apply the value of the operator subexpression to the values of the operand subexpressions.
+1. To evaluate a combination (a compound expression other than a special form), evaluate the subexpressions and then apply the value of the operator subexpression to the values of the operand subexpressions.
 
-2. To apply a compound procedure to a set of arguments, evaluateuate the body of the procedure in a new environment. To construct this environment, extend the environment part of the procedure object by a frame in which the formal parameters of the procedure are bound to the arguments to which the procedure is applied.
+2. To apply a compound procedure to a set of arguments, evaluate the body of the procedure in a new environment. To construct this environment, extend the environment part of the procedure object by a frame in which the formal parameters of the procedure are bound to the arguments to which the procedure is applied.
 */
 
 function EWLang() {
@@ -44,7 +44,7 @@ function EWLang() {
         evaluate,
         apply,
         
-        // for adding types of objects the evaluateuator can handle at runtime
+        // for adding types of objects the evaluator can handle at runtime
         expressionTypes = [],
         addExpressionType = this.addExpressionType = function (type, test, evaluator) {
             expressionTypes.push({ type: type, test: test, evaluator: evaluator});
@@ -109,7 +109,7 @@ function EWLang() {
             env = _env;
         }
 
-        function getSelfEvaluateuatingValue(token) {
+        function getSelfEvaluatingValue(token) {
             var atom;
             if (isNumber(token)) {
                 return getNumber(token);
@@ -122,9 +122,9 @@ function EWLang() {
         }
         
         /*
-          the core of the evaluateuator
+          the core of the evaluator
 
-          primitive expressions - self-evaluateuating expressions, variables in env
+          primitive expressions - self-evaluating expressions, variables in env
           special forms -
               - quoted expressions 
               - assignment - computes value, updates environment
@@ -151,12 +151,12 @@ function EWLang() {
         throw new Error(EWLang.prototype.ERROR.UNKNOWN_EXPRESSION_TYPE);
     };  // evaluate
 
-    // self-evaluateuating things like bools, numbers
-    function isSelfEvaluateuating(token) {return isNumber(token) || isBoolean(token) || isString(token); }
-    function evaluateSelfEvaluateuating(token) {
+    // self-evaluating things like bools, numbers
+    function isSelfEvaluating(token) {return isNumber(token) || isBoolean(token) || isString(token); }
+    function evaluateSelfEvaluating(token) {
         return token;
     }
-    addExpressionType("self-evaluateuating", isSelfEvaluateuating, evaluateSelfEvaluateuating);
+    addExpressionType("self-evaluating", isSelfEvaluating, evaluateSelfEvaluating);
 
     // variables
     function isVariable(token, env) { return getTokenType(token) === 'symbol'
@@ -179,6 +179,25 @@ function EWLang() {
 //        return "ok";// + JSON.stringify(env.list());
     }
     addExpressionType("assignment", isAssignment, evaluateAssignment);
+
+    // definition -(define <var> <value>)
+    function isDefinition(expl) {
+        return isTaggedList(expl, 'define');
+    }
+    function variableDefinition (expl) {
+        if (isSymbol(expl)) {
+            return getTokenValue(expl);
+        } else {
+            return eval(expl);
+        }
+    }
+    function evaluateDefinition(expl, env) {
+        var name = variableDefinition(expl[1]),
+            value = eval(expl[2], env);
+        env.defineVariable(variableDefinition(expl[1]), eval(expl[2], env));
+        return name;
+    }
+    addExpressionType("definition", isDefinition, evaluateDefinition);
 
     // if 
     function isIf(expl) {
