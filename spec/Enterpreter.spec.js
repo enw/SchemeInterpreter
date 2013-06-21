@@ -52,6 +52,8 @@ describe('Enterpreter Suite', function () {
         });
     it('allows setting and getting of variables in the environment',
         function () {
+            expect(evaluate('( define age 32 )')).toBe('age');
+            expect(evaluate('( define weight 135.6)')).toBe('weight');
             expect(evaluate('( set! age 88 )')).toBe(88);
             expect(evaluate('( set! weight 240.9)')).toBe(240.9);
             expect(evaluate('age')).toBe(88);

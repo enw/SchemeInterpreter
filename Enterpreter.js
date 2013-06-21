@@ -169,10 +169,11 @@ function EWLang() {
     // assignment -(set! <var> <value>)
     function isAssignment(expl) {
         //            console.log("isAssignment", expl, isTaggedList(expl, 'set!'));
-        return isTaggedList(expl, 'set!');
+        return isTaggedList(expl, 'set!'); 
+        
     }
     function evaluateAssignment(expl, env) {
-        return env.setVariableValue(expl[1], expl[2]);
+        return env.setVariableValue(expl[1].value, expl[2]);
 //        return "ok";// + JSON.stringify(env.list());
     }
 
