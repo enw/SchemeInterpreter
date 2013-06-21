@@ -88,5 +88,13 @@ describe('Enterpreter Suite', function () {
         function () {
             expect(evaluate('(( lambda ( x ) ( + x 3 )) 3)')).toBe(6); // add 3
         });
+    it('executes begin expressions',
+        function () {
+            expect(evaluate('(begin (define x 7) (define y 32) (+ x y))')).toBe(39);
+        });
+    it('executes cond expressions',
+        function () {
+            expect(evaluate('(cond ((#f 123) (#f 555) (#t 333)')).toBe(333);
+        });
 
 });
