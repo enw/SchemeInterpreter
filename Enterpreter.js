@@ -16,7 +16,7 @@ function EWLang() {
 
     // helper
     function getErrorString(which, details) {
-        return EWLang.prototype.ERROR[which] + (details) ? ( ' - ' + details ) : '';
+        return EWLang.prototype.ERROR[which] + (details) ? (' - ' + details) : '';
     }
 
     // get token value, type
@@ -184,17 +184,17 @@ function EWLang() {
     function isDefinition(expl) {
         return isTaggedList(expl, 'define');
     }
-    function variableDefinition (expl) {
+    function variableDefinition(expl) {
         if (isSymbol(expl)) {
             return getTokenValue(expl);
         } else {
-            return eval(expl);
+            return evaluate(expl);
         }
     }
     function evaluateDefinition(expl, env) {
         var name = variableDefinition(expl[1]),
-            value = eval(expl[2], env);
-        env.defineVariable(variableDefinition(expl[1]), eval(expl[2], env));
+            value = evaluate(expl[2], env);
+        env.defineVariable(variableDefinition(expl[1]), evaluate(expl[2], env));
         return name;
     }
     addExpressionType("definition", isDefinition, evaluateDefinition);
@@ -313,8 +313,8 @@ function EWLang() {
 
 // 
 EWLang.prototype.ERROR = {
-        UNKNOWN_EXPRESSION_TYPE: "Unknown expression type - EVAL",
-        UNBOUND_VARIABLE: "Unbound Variable - EVAL"
+    UNKNOWN_EXPRESSION_TYPE: "Unknown expression type - EVAL",
+    UNBOUND_VARIABLE: "Unbound Variable - EVAL"
 };
 
 module.exports = EWLang;
