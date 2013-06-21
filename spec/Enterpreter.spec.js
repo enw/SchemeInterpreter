@@ -1,4 +1,5 @@
 /*jslint node:true nomen:true */
+/*global it, expect, describe */
 // uses jasmine-node-karma
 // https://npmjs.org/package/jasmine-node-karma
 "use strict";
