@@ -156,18 +156,15 @@ function EWLang() {
     function evaluateSelfEvaluating(token) {
         return token;
     }
-    addExpressionType("self-evaluating", isSelfEvaluating, evaluateSelfEvaluating);
 
     // variables
     function isVariable(token, env) { return getTokenType(token) === 'symbol'
             && env.lookupVariableValue(getTokenValue(token)); }
     function evaluateVariable(token, env) { return env.lookupVariableValue(getTokenValue(token)); }
-    addExpressionType("variable", isVariable, evaluateVariable);
 
     // quoted -(quote <anything>)
     function isQuote(expl) { return isTaggedList(expl, 'quote'); }
     function evaluateQuote(expl, env) { return first(rest(expl)); }
-    addExpressionType("quote", isQuote, evaluateQuote);
 
     // assignment -(set! <var> <value>)
     function isAssignment(expl) {
@@ -178,7 +175,6 @@ function EWLang() {
         return env.setVariableValue(expl[1], expl[2]);
 //        return "ok";// + JSON.stringify(env.list());
     }
-    addExpressionType("assignment", isAssignment, evaluateAssignment);
 
     // definition -(define <var> <value>)
     function isDefinition(expl) {
@@ -197,7 +193,6 @@ function EWLang() {
         env.defineVariable(variableDefinition(expl[1]), evaluate(expl[2], env));
         return name;
     }
-    addExpressionType("definition", isDefinition, evaluateDefinition);
 
     // if 
     function isIf(expl) {
@@ -228,7 +223,6 @@ function EWLang() {
             return evaluate(alternative(expl), env);
         }
     }
-    addExpressionType("if", isIf, evaluateIf);
 
     // compound procedures are constructed from parameters,
     // procedure bodies and environments
@@ -244,6 +238,22 @@ function EWLang() {
         return proc && proc.type && proc.type === 'procedure';
     }
 
+    // begin
+    function isBegin(sexp) {
+        return isTaggedList(sexp, 'begin');
+    }
+    function evaluateBegin(sexp, env) {
+        return "TODO";
+    }
+    
+    // cond
+    function isCond(sexp) {
+        return isTaggedList(sexp, 'cond');
+    }
+    function evaluateCond(sexp, env) {
+        return "TODO";
+    }
+    
     // lambda
     function isLambda(sexp) {
         return isTaggedList(sexp, 'lambda');
@@ -259,7 +269,6 @@ function EWLang() {
                                lambda_body(expl),
                                env);
     }
-    addExpressionType('lambda', isLambda, makeLambda);
 
     function evaluateListOfValues(list, env) {
         if (list.length === 0) {
@@ -277,13 +286,12 @@ function EWLang() {
         return apply(evaluate(getOperator(expl), env),
                       evaluateListOfValues(getOperands(expl), env));
     }
-    addExpressionType("application", isApplication, evaluateApplication);
 
     // different than in SICP, where it's a tagged list starting with 'primitive'
     function isPrimitiveProcedure(proc) {
         return typeof proc === 'function';
     }
-    
+
     // is this modifying, changing the proc and environment rather than
     // just applying it?
     function applyLambda(proc, args) {
@@ -309,6 +317,19 @@ function EWLang() {
             throw ("ERROR: apply uncaught::" + JSON.stringify(procedure) + "::" + args);
         }
     };
+    
+    // expression types
+    addExpressionType("self-evaluating", isSelfEvaluating, evaluateSelfEvaluating);
+    addExpressionType("variable", isVariable, evaluateVariable);
+    addExpressionType("quoted", isQuote, evaluateQuote);
+    addExpressionType("assignment", isAssignment, evaluateAssignment);
+    addExpressionType("definition", isDefinition, evaluateDefinition);
+    addExpressionType("if", isIf, evaluateIf);
+    addExpressionType('lambda', isLambda, makeLambda);
+    addExpressionType('begin', isBegin, evaluateBegin);
+    addExpressionType('cond', isCond, evaluateCond);
+    addExpressionType("application", isApplication, evaluateApplication);
+
 } // EWLang
 
 // 
