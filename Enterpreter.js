@@ -336,7 +336,7 @@ function EWLang() {
 // 
 EWLang.prototype.ERROR = {
     UNKNOWN_EXPRESSION_TYPE: "Unknown expression type - EVAL",
-    UNBOUND_VARIABLE: "Unbound Variable - EVAL"
+    UNBOUND_VARIABLE: "Unbound Variable"
 };
 
 module.exports = EWLang;

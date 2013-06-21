@@ -9,7 +9,7 @@ function evaluate(s) {
     return e.evaluate(e.parse(s));
 }
 describe('Enterpreter Suite', function () {
-    it('evaluates numbers',
+    it('evaluatesnumbers',
         function () {
             expect(evaluate('1')).toBe(1);
         });
@@ -68,7 +68,7 @@ describe('Enterpreter Suite', function () {
     it('throws an error if you evaluate something not defined in the environment',
         function () {
             expect(function () {evaluate('notdefined'); }).toThrow(
-                e.ERROR.UNKNOWN_EXPRESSION_TYPE
+                e.ERROR.UNBOUND_VARIABLE
             );
         });
     it('handles quoted numbers and lists',
