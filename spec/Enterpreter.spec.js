@@ -83,9 +83,12 @@ describe('Enterpreter Suite', function () {
             expect(evaluate('( if #f "YES" "NO" )')).toBe("NO");
             expect(evaluate('( if #t ( + 3 ( * 2 9 ) ) "NO" )')).toBe(21);
         });
-    it('allows for definition of lambda expressions',
+    it('lambda expression is a procedure',
         function () {
-            expect(evaluate('( lambda ( x ) ( + x 3 ) )')).toBe("TODO"); // add 3
+            expect((function () {
+                var ret = evaluate('( lambda ( x ) ( + x 3 ) )')
+                return ret.type == 'procedure';
+            })()).toBe(true); // add 3
         });
     it('executes lambda expressions',
         function () {
