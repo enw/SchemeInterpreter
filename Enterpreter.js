@@ -239,12 +239,24 @@ function EWLang() {
         return proc && proc.type && proc.type === 'procedure';
     }
 
+    // helper
+    function evaluateSequence ( seq, env ) {
+        //console.log("evaluateSequence", seq);
+        if (seq.length == 1) {
+            return evaluate(first(seq), env)
+        } else {
+            evaluate(first(seq));
+            return evaluateSequence(rest(seq), env);
+        }
+    }
+
     // begin
     function isBegin(sexp) {
         return isTaggedList(sexp, 'begin');
     }
     function evaluateBegin(sexp, env) {
-        return "TODO";
+        // (eval-sequence (begin-actions exp) env))
+        return evaluateSequence(rest(sexp), env);
     }
     
     // cond
