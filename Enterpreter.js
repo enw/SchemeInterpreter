@@ -104,7 +104,6 @@ function EWLang() {
     // returns : one expression or value
     // example expl input - [{"type":"symbol","value":"+"},1,[{"type":"symbol","value":"*"},5,2]]
     evaluate = this.evaluate = function (expl, env) {
-//console.log("evaluate this",expl);
         if (!env) {
             env = _env;
         }
@@ -276,7 +275,7 @@ function EWLang() {
             return first(rest(expl));
         }
         function lambda_body(expl) {
-            return first(rest(rest(expl)));
+            return rest(rest(expl));
         }
         return makeCompoundProcedure(lambda_parameters(expl),
                                lambda_body(expl),
@@ -308,13 +307,22 @@ function EWLang() {
     // is this modifying, changing the proc and environment rather than
     // just applying it?
     function applyLambda(proc, args) {
+        /*
+        (eval-sequence
+        (procedure-body procedure)
+        (extend-environment
+        (procedure-parameters procedure)
+        arguments
+        (procedure-environment procedure))))
+            */
         // extend environment with arguments
         var env = proc.environment,
             i;
         for (i = 0; i < args.length; i += 1) {
             env.defineVariable(proc.parameters[i].value, args[i]);
         }
-        return evaluate(proc.body, env);
+//        console.log("APPLY LAMBDA", proc);
+        return evaluateSequence(proc.body, env);
 //        return proc.environment.list();
     }
 
@@ -324,7 +332,14 @@ function EWLang() {
             // just apply the procedure
             return procedure.apply({}, args);
         } else if (isCompoundProcedure(procedure)) {
-            console.log("TODO:replace applyLambda with evaluateSequence!");
+            /*
+             (eval-sequence
+             (procedure-body procedure)
+             (extend-environment
+             (procedure-parameters procedure)
+             arguments
+             (procedure-environment procedure))))
+             */
             return applyLambda(procedure, args);
         } else {
             throw ("ERROR: apply uncaught::" + JSON.stringify(procedure) + "::" + args);
