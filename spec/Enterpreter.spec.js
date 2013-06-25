@@ -86,9 +86,9 @@ describe('Enterpreter Suite', function () {
     it('lambda expression is a procedure',
         function () {
             expect((function () {
-                var ret = evaluate('( lambda ( x ) ( + x 3 ) )')
-                return ret.type == 'procedure';
-            })()).toBe(true); // add 3
+                var ret = evaluate('( lambda ( x ) ( + x 3 ) )');
+                return ret.type === 'procedure';
+            }())).toBe(true); // add 3
         });
     it('executes lambda expressions',
         function () {

@@ -168,7 +168,7 @@ function EWLang() {
     // assignment -(set! <var> <value>)
     function isAssignment(expl) {
         //            console.log("isAssignment", expl, isTaggedList(expl, 'set!'));
-        return isTaggedList(expl, 'set!'); 
+        return isTaggedList(expl, 'set!');
         
     }
     function evaluateAssignment(expl, env) {
@@ -239,10 +239,10 @@ function EWLang() {
     }
 
     // helper
-    function evaluateSequence ( seq, env ) {
+    function evaluateSequence(seq, env) {
         //console.log("evaluateSequence", seq);
-        if (seq.length == 1) {
-            return evaluate(first(seq), env)
+        if (seq.length === 1) {
+            return evaluate(first(seq), env);
         } else {
             evaluate(first(seq));
             return evaluateSequence(rest(seq), env);
