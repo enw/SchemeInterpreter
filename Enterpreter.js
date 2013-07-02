@@ -129,7 +129,7 @@ function EWLang() {
               - assignment - computes value, updates environment
               - if expression
               - lambda
-              - begin(NOT YET HANDLED)
+              - begin
               - cond(NOT YET HANDLED)
         */
         var handled = false,
