@@ -130,5 +130,29 @@ describe('Enterpreter Suite', function () {
             expect(function () {evaluate('( cond (else 369) (#t 3))'); }).
                 toThrow(e.ERROR.COND_EARLY_ELSE);
         });
+    it('supports defining of lambdas',
+        function () {
+            // define function 
+           expect(evaluate("(define cons (lambda (x y) (lambda (m) (m x y))))")).toBe("cons");
+           expect(evaluate("(define car (lambda (z) (z (lambda (p q) p))))")).toBe("car");
 
+            // function is defined
+            expect((function () {
+                var ret = evaluate("cons");
+//console.log("CONS", ret.environment.dump());
+//console.log("CONS", ret.environment.entries());
+                return ret.type === 'procedure';
+            }())).toBe(true); 
+        });
+
+    it('supports execution of user-defined lambdas',
+       function () {
+           var dottedPair = evaluate("(cons 1 2)"),
+               environmentValues = dottedPair.environment.data();
+           //console.log("CONS PAIR", dottedPair.environment.data());
+
+            // function can be called
+            expect(environmentValues.x).toBe(1);
+            expect(environmentValues.y).toBe(2);
+       });
 });
