@@ -102,20 +102,30 @@ describe('Enterpreter Suite', function () {
         function () {
             expect(evaluate('(begin (define x 7) (define y 32) (+ x y))')).toBe(39);
         });
+    // the first derived expression...
+    // this is somewhat complex
+    // i.e. there are a number of cases for cond
     it('executes cond expressions',
         function () {
+            // empty cond is false
             var emptyCond = evaluate('(cond)');
-
             expect(e.isTrue(emptyCond)).toBe(false);
 
+            
 //            expect(evaluate('(cond ((> 3 2) 369)((< 3 2) 912))')).toBe(369);
+
+            // else should be last
             expect(evaluate('(cond (else 369))')).toBe(369);
+
+            // evaluate sequence
+            expect(evaluate('(cond (else (+ 3 2) (+ 366 3)))')).toBe(369);
+
+            // there can be a sequence of actions
+ //           expect(evaluate('(cond (#f 222) (else 369))')).toBe(369);
 
             // this should fail...
             expect(function () {evaluate('( cond (else 369) (#t 3))'); }).
                 toThrow(e.ERROR.COND_EARLY_ELSE);
-
-//            expect(evaluate('(cond (else 369) (#t 3))')).toBe(369);
         });
 
 });

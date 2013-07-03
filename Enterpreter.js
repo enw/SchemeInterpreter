@@ -308,12 +308,10 @@ function EWLang() {
             } else if (isElseClause(clause)) {
                 var actions = clauseActions(clause);
                 if (clauses.length===1) {
-console.log('TODO: evaluate sequence of actions', actions);
-                    return evaluate(actions[0], env); // actually sequence..
+                    return evaluateSequence(actions, env);
                 } else {
                     throw EWLang.prototype.ERROR.COND_EARLY_ELSE;
                 }
-                //                    return dbg("TODO: else", clause);
             } else {
 console.log("NOT IFELSE");
                 return dbg("TODO: keep GOING");
