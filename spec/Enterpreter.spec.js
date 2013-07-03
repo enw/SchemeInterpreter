@@ -133,14 +133,21 @@ describe('Enterpreter Suite', function () {
     it('supports defining of lambdas',
         function () {
             // define function 
-           expect(evaluate("(define cons (lambda (x y) (lambda (m) (m x y))))")).toBe("cons");
-           expect(evaluate("(define car (lambda (z) (z (lambda (p q) p))))")).toBe("car");
+            expect(evaluate(
+                "(define cons (lambda (x y) (lambda (m) (m x y))))"
+            )).toBe("cons");
+
+            expect(evaluate(
+                "(define car (lambda (z) (z (lambda (p q) p))))"
+            )).toBe("car");
+
+            expect(evaluate(
+                "(define cdr (lambda (z) (z (lambda (p q) q))))"
+            )).toBe("cdr");
 
             // function is defined
             expect((function () {
                 var ret = evaluate("cons");
-//console.log("CONS", ret.environment.dump());
-//console.log("CONS", ret.environment.entries());
                 return ret.type === 'procedure';
             }())).toBe(true); 
         });
@@ -148,11 +155,14 @@ describe('Enterpreter Suite', function () {
     it('supports execution of user-defined lambdas',
        function () {
            var dottedPair = evaluate("(cons 1 2)"),
-               environmentValues = dottedPair.environment.data();
-           //console.log("CONS PAIR", dottedPair.environment.data());
+               environmentValues = dottedPair.environment.data(),
+               car = evaluate("(car (cons 1 2))"),
+               cdr = evaluate("(cdr (cons 1 2))");
 
             // function can be called
             expect(environmentValues.x).toBe(1);
             expect(environmentValues.y).toBe(2);
+            expect(car).toBe(1);
+            expect(cdr).toBe(2);
        });
 });
