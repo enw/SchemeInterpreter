@@ -13,7 +13,8 @@ The model has two basic parts:
 function EWLang() {
     "use strict";
     // for debugging
-    function dbg(s) { console.log(s); return s; }
+//    function dbg(s) { console.log(s); return s; }
+    function dbg(s) { return s; }
 
     // helper
     function getErrorString(which, details) {
@@ -203,7 +204,7 @@ function EWLang() {
 
     // helper
     function makeIf(predicate, consequent, alternative) {
-        return [ makeSymbol('if'), consequent, alternative ];
+        return [ makeSymbol('if'), predicate, consequent, alternative ];
     }
 
     function evaluateIf(expl, env) {
@@ -300,21 +301,49 @@ function EWLang() {
             return expandClauses(condClauses());
         }
         function expandClauses(clauses) {
-            var clause = first(clauses);
-//console.log("CLAUSES", clauses);
-//console.log("CLAUSES", clause);
+            var firstClause = first(clauses),
+                restClauses = rest(clauses);
+
+//console.log("expandClauses", clauses);
+//console.log("firstClause", firstClause);
+//console.log("restClauses", restClauses);
+
+            /*
+              (if (null? clauses)
+                  'false                          ; no else clause
+             */
             if (clauses.length === 0) {
                 return makeBooleanSymbol(false);
-            } else if (isElseClause(clause)) {
-                var actions = clauseActions(clause);
+            } else if (isElseClause(firstClause)) {
+                /*
+                  (let ((first (car clauses))
+                  (rest (cdr clauses)))
+                    (if (cond-else-clause? first)
+                        (if (null? rest)
+                            (sequence->exp (cond-actions first))
+                            (error "ELSE clause isn't last -- COND->IF"
+                                   clauses))
+                 */
+                var actions = clauseActions(firstClause);
                 if (clauses.length===1) {
                     return evaluateSequence(actions, env);
                 } else {
                     throw EWLang.prototype.ERROR.COND_EARLY_ELSE;
                 }
             } else {
-console.log("NOT IFELSE");
-                return dbg("TODO: keep GOING");
+                // it's not the else clauses
+                // console.log("NOT THE IF ELSE", clausePredicate(firstClause), restClauses);
+                /*
+                  (make-if (cond-predicate first)
+                      (sequence->exp (cond-actions first))
+                      (expand-clauses rest))))))
+
+                      function makeIf(predicate, consequent, alternative) {
+                */
+                return makeIf(clausePredicate(firstClause), 
+                              evaluateSequence(clauseActions(firstClause), env),
+                              expandClauses(restClauses)
+                              );
             }
         }
 
