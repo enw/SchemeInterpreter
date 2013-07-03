@@ -287,26 +287,32 @@ function EWLang() {
     }
     function evaluateCond(sexp, env) {
         function condClauses() { return rest(sexp); }
-        function condPredicate(clause) { return first(clause); }
-        function condActions(clause) { return rest(clause); }
+        function clausePredicate(clause) { return first(clause); }
+        function clauseActions(clause) { return rest(clause); }
         function isElse(predicate) { 
             return isSymbol(predicate) &&
                 getTokenValue(predicate) === 'else'; 
         }
         function isElseClause(clause) { 
-            return isElse(condPredicate(clause));
+            return isElse(clausePredicate(clause));
         }
         function cond2If(sexp) {
             return expandClauses(condClauses());
         }
         function expandClauses(clauses) {
             var clause = first(clauses);
-console.log("CLAUSES", clauses);
-console.log("CLAUSES", clause);
+//console.log("CLAUSES", clauses);
+//console.log("CLAUSES", clause);
             if (clauses.length === 0) {
                 return makeBooleanSymbol(false);
             } else if (isElseClause(clause)) {
-                return condActions(clause)[0];
+                var actions = clauseActions(clause);
+                if (clauses.length===1) {
+console.log('TODO: evaluate sequence of actions', actions);
+                    return evaluate(actions[0], env); // actually sequence..
+                } else {
+                    throw EWLang.prototype.ERROR.COND_EARLY_ELSE;
+                }
                 //                    return dbg("TODO: else", clause);
             } else {
 console.log("NOT IFELSE");
@@ -414,7 +420,10 @@ console.log("NOT IFELSE");
 // 
 EWLang.prototype.ERROR = {
     UNKNOWN_EXPRESSION_TYPE: "Unknown expression type - EVAL",
-    UNBOUND_VARIABLE: "Unbound Variable"
+    UNBOUND_VARIABLE: "Unbound Variable",
+    COND_EARLY_ELSE: "'else' clause is not last"
 };
 
 module.exports = EWLang;
+
+ 

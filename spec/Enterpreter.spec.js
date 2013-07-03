@@ -108,8 +108,14 @@ describe('Enterpreter Suite', function () {
 
             expect(e.isTrue(emptyCond)).toBe(false);
 
-            expect(evaluate('(cond ((> 3 2) 369)((< 3 2) 912))')).toBe(369);
+//            expect(evaluate('(cond ((> 3 2) 369)((< 3 2) 912))')).toBe(369);
             expect(evaluate('(cond (else 369))')).toBe(369);
+
+            // this should fail...
+            expect(function () {evaluate('( cond (else 369) (#t 3))'); }).
+                toThrow(e.ERROR.COND_EARLY_ELSE);
+
+//            expect(evaluate('(cond (else 369) (#t 3))')).toBe(369);
         });
 
 });
