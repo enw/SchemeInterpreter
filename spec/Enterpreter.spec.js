@@ -10,7 +10,7 @@ function evaluate(s) {
     return e.evaluate(e.parse(s));
 }
 describe('Enterpreter Suite', function () {
-    it('evaluatesnumbers',
+    it('evaluates numbers',
         function () {
             expect(evaluate('1')).toBe(1);
         });
@@ -104,7 +104,12 @@ describe('Enterpreter Suite', function () {
         });
     it('executes cond expressions',
         function () {
-            expect(evaluate('(cond ((#f 123) (#f 555) (#t 333)')).toBe(333);
+            var emptyCond = evaluate('(cond)');
+
+            expect(e.isTrue(emptyCond)).toBe(false);
+
+            expect(evaluate('(cond ((> 3 2) 369)((< 3 2) 912))')).toBe(369);
+            expect(evaluate('(cond (else 369))')).toBe(369);
         });
 
 });

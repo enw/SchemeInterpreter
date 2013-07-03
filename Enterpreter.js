@@ -10,9 +10,10 @@ The model has two basic parts:
 
 2. To apply a compound procedure to a set of arguments, evaluate the body of the procedure in a new environment. To construct this environment, extend the environment part of the procedure object by a frame in which the formal parameters of the procedure are bound to the arguments to which the procedure is applied.
 */
-
 function EWLang() {
     "use strict";
+    // for debugging
+    function dbg(s) { console.log(s); return s; }
 
     // helper
     function getErrorString(which, details) {
@@ -258,12 +259,62 @@ function EWLang() {
         return evaluateSequence(rest(sexp), env);
     }
     
-    // cond
+    /* cond
+       this is a 'derived expression' 
+       it transforms a 'cond' into an 'if' and a 'begin'
+    
+       (cond <clause 1> <clause 2> .... )
+           where clauses are (<test> <expression 1> <expression 2> ...)
+           and the last clause may be an "else" expression of the form
+               (else <expression 1> <expression 2> ...)
+           
+       i.e.
+       (cond ((> x 0) x)
+          ((= x 0) (display 'zero) 0)
+          (else (- x)))
+
+       becomes
+
+       (if (> x 0)
+           x
+           (if (= x 0)
+               (begin (display 'zero)
+                       0)
+               (- x)))
+    */
     function isCond(sexp) {
         return isTaggedList(sexp, 'cond');
     }
     function evaluateCond(sexp, env) {
-        return "TODO";
+        function condClauses() { return rest(sexp); }
+        function condPredicate(clause) { return first(clause); }
+        function condActions(clause) { return rest(clause); }
+        function isElse(predicate) { 
+            return isSymbol(predicate) &&
+                getTokenValue(predicate) === 'else'; 
+        }
+        function isElseClause(clause) { 
+            return isElse(condPredicate(clause));
+        }
+        function cond2If(sexp) {
+            return expandClauses(condClauses());
+        }
+        function expandClauses(clauses) {
+            var clause = first(clauses);
+console.log("CLAUSES", clauses);
+console.log("CLAUSES", clause);
+            if (clauses.length === 0) {
+                return makeBooleanSymbol(false);
+            } else if (isElseClause(clause)) {
+                return condActions(clause)[0];
+                //                    return dbg("TODO: else", clause);
+            } else {
+console.log("NOT IFELSE");
+                return dbg("TODO: keep GOING");
+            }
+        }
+
+        return evaluate(cond2If(sexp), env);
     }
     
     // lambda
