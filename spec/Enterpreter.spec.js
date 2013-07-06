@@ -153,7 +153,7 @@ describe('SchemeEnterpreter Suite', function () {
             }())).toBe(true);
         });
 
-    it('supports execution of user-defined lambdas',
+    it('new car and cdr support execution of user-defined lambdas',
         function () {
             var dottedPair = evaluate("(cons 1 2)"),
                 environmentValues = dottedPair.environment.data(),
