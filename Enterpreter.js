@@ -290,15 +290,12 @@ function EWLang() {
         function condClauses() { return rest(sexp); }
         function clausePredicate(clause) { return first(clause); }
         function clauseActions(clause) { return rest(clause); }
-        function isElse(predicate) { 
+        function isElse(predicate) {
             return isSymbol(predicate) &&
-                getTokenValue(predicate) === 'else'; 
+                getTokenValue(predicate) === 'else';
         }
-        function isElseClause(clause) { 
+        function isElseClause(clause) {
             return isElse(clausePredicate(clause));
-        }
-        function cond2If(sexp) {
-            return expandClauses(condClauses());
         }
         function expandClauses(clauses) {
             var firstClause = first(clauses),
@@ -324,9 +321,8 @@ function EWLang() {
                             (error "ELSE clause isn't last -- COND->IF"
                                    clauses))
                  */
-                var actions = clauseActions(firstClause);
-                if (clauses.length===1) {
-                    return evaluateSequence(actions, env);
+                if (clauses.length === 1) {
+                    return evaluateSequence(clauseActions(firstClause), env);
                 } else {
                     throw EWLang.prototype.ERROR.COND_EARLY_ELSE;
                 }
@@ -340,11 +336,15 @@ function EWLang() {
 
                       function makeIf(predicate, consequent, alternative) {
                 */
-                return makeIf(clausePredicate(firstClause), 
+                return makeIf(clausePredicate(firstClause),
                               evaluateSequence(clauseActions(firstClause), env),
                               expandClauses(restClauses)
                               );
             }
+        } // expandClauses
+
+        function cond2If(sexp) {
+            return expandClauses(condClauses());
         }
 
         return evaluate(cond2If(sexp), env);
@@ -451,6 +451,12 @@ EWLang.prototype.ERROR = {
     COND_EARLY_ELSE: "'else' clause is not last"
 };
 
+/* 
+   support running as a commonJS module or in a browser
+*/
+if (typeof module !== 'undefined') { var module = {}; }
+
+// export the interpreter
 module.exports = EWLang;
 
  

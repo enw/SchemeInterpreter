@@ -149,20 +149,20 @@ describe('Enterpreter Suite', function () {
             expect((function () {
                 var ret = evaluate("cons");
                 return ret.type === 'procedure';
-            }())).toBe(true); 
+            }())).toBe(true);
         });
 
     it('supports execution of user-defined lambdas',
-       function () {
-           var dottedPair = evaluate("(cons 1 2)"),
-               environmentValues = dottedPair.environment.data(),
-               car = evaluate("(car (cons 1 2))"),
-               cdr = evaluate("(cdr (cons 1 2))");
+        function () {
+            var dottedPair = evaluate("(cons 1 2)"),
+                environmentValues = dottedPair.environment.data(),
+                car = evaluate("(car (cons 1 2))"),
+                cdr = evaluate("(cdr (cons 1 2))");
 
             // function can be called
             expect(environmentValues.x).toBe(1);
             expect(environmentValues.y).toBe(2);
             expect(car).toBe(1);
             expect(cdr).toBe(2);
-       });
+        });
 });
