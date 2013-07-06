@@ -10,6 +10,14 @@ The model has two basic parts:
 
 2. To apply a compound procedure to a set of arguments, evaluate the body of the procedure in a new environment. To construct this environment, extend the environment part of the procedure object by a frame in which the formal parameters of the procedure are bound to the arguments to which the procedure is applied.
 */
+/* 
+   support running as a commonJS module or in a browser
+*/
+if (typeof module === 'undefined') { var module = {exports: {}}; }
+
+var Environment = (typeof require === 'function') ? require('./lib/Environment') : module.exports.Environment,
+    parser = (typeof require === 'function') ? require('./lib/parser') : module.exports.parser;
+
 function EWLang() {
     "use strict";
     // for debugging
@@ -30,7 +38,7 @@ function EWLang() {
     function isTrue(token) { return !isFalse(token); }
 
     // returns parse tree
-    this.parse = require('./lib/parser');
+    this.parse = parser;
 
         
     // helper function()
@@ -41,8 +49,7 @@ function EWLang() {
     }
         
     // set up the 'global' environment
-    var Environment = require('./lib/Environment'),
-        _env = new Environment(),
+    var _env = new Environment(),
         evaluate,
         apply,
         
@@ -450,11 +457,6 @@ EWLang.prototype.ERROR = {
     UNBOUND_VARIABLE: "Unbound Variable",
     COND_EARLY_ELSE: "'else' clause is not last"
 };
-
-/* 
-   support running as a commonJS module or in a browser
-*/
-if (typeof module !== 'undefined') { var module = {}; }
 
 // export the interpreter
 module.exports = EWLang;
