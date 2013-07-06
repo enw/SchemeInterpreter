@@ -1,4 +1,0 @@
-LEX
-PARSE
-EVAL
-traditional compilation - lex, preprocess, parse, optimize, code-gen (or eval)
