@@ -8,7 +8,7 @@
 // http://mitpress.mit.edu/sicp/full-text/book/book-Z-H-26.html#%_sec_4.1.3
 "use strict";
 
-var Environment = require('../lib/Environment');
+var Environment = require('../lib/Environment').Environment;
 // isDefined, set, set, unset, setbang, unsetbang, get
 describe('Environment Suite', function () {
     it('lokupVariableValue <var> - signals error if <var> is unbound',

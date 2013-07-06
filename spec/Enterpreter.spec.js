@@ -4,12 +4,13 @@
 // https://npmjs.org/package/jasmine-node-karma
 "use strict";
 
-var Enterpreter = require('../Enterpreter');
+var Enterpreter = require('../Enterpreter').SchemeInterpreter;
 var e = new Enterpreter();
+console.log("SE", typeof Enterpreter);
 function evaluate(s) {
     return e.evaluate(e.parse(s));
 }
-describe('Enterpreter Suite', function () {
+describe('SchemeEnterpreter Suite', function () {
     it('evaluates numbers',
         function () {
             expect(evaluate('1')).toBe(1);

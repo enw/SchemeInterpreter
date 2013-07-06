@@ -10,23 +10,25 @@ The model has two basic parts:
 
 2. To apply a compound procedure to a set of arguments, evaluate the body of the procedure in a new environment. To construct this environment, extend the environment part of the procedure object by a frame in which the formal parameters of the procedure are bound to the arguments to which the procedure is applied.
 */
-/* 
-   support running as a commonJS module or in a browser
-*/
+
+
+// support running as a commonJS module or in a browser
 if (typeof module === 'undefined') { var module = {exports: {}}; }
 
-var Environment = (typeof require === 'function') ? require('./lib/Environment') : module.exports.Environment,
-    parser = (typeof require === 'function') ? require('./lib/parser') : module.exports.parser;
-
-function EWLang() {
+function SchemeInterpreter() {
     "use strict";
+    // 'includes' or assumptions of already-loaded classes in module.exports
+    var Environment = (typeof require === 'function') ? require('./lib/Environment').Environment : module.exports.Environment,
+        parser = (typeof require === 'function') ? require('./lib/parser').parser : module.exports.parser;
+
+
     // for debugging
 //    function dbg(s) { console.log(s); return s; }
     function dbg(s) { return s; }
 
     // helper
     function getErrorString(which, details) {
-        return EWLang.prototype.ERROR[which] + (details) ? (' - ' + details) : '';
+        return SchemeInterpreter.prototype.ERROR[which] + (details) ? (' - ' + details) : '';
     }
 
     // get token value, type
@@ -156,7 +158,7 @@ function EWLang() {
 
         // not handled
 //        throw new Error(EWLang.prototype.ERROR.UNKNOWN_EXPRESSION_TYPE);
-        throw new Error(EWLang.prototype.ERROR.UNKNOWN_EXPRESSION_TYPE);
+        throw new Error(SchemeInterpreter.prototype.ERROR.UNKNOWN_EXPRESSION_TYPE);
     };  // evaluate
 
     // self-evaluating things like bools, numbers
@@ -331,7 +333,7 @@ function EWLang() {
                 if (clauses.length === 1) {
                     return evaluateSequence(clauseActions(firstClause), env);
                 } else {
-                    throw EWLang.prototype.ERROR.COND_EARLY_ELSE;
+                    throw SchemeInterpreter.prototype.ERROR.COND_EARLY_ELSE;
                 }
             } else {
                 // it's not the else clauses
@@ -452,13 +454,13 @@ function EWLang() {
 } // EWLang
 
 // 
-EWLang.prototype.ERROR = {
+SchemeInterpreter.prototype.ERROR = {
     UNKNOWN_EXPRESSION_TYPE: "Unknown expression type - EVAL",
     UNBOUND_VARIABLE: "Unbound Variable",
     COND_EARLY_ELSE: "'else' clause is not last"
 };
 
 // export the interpreter
-module.exports = EWLang;
+module.exports.SchemeInterpreter = SchemeInterpreter;
 
  
