@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>enw template</title>
+    <script src="../lib/Environment.js" ></script>
+    <script src="../lib/parser.js" ></script>
+    <script src="../Enterpreter.js" ></script>
+    <script>
+      // the interpreter
+      var Enterpreter = module.exports.SchemeInterpreter;
+      var e = new Enterpreter();
+      
+      function compileInput() {
+          var input = document.getElementById("input").value,
+              output = e.evaluate(e.parse(input)); 
+          document.getElementById("output").value = output;
+      }
+    </script>
+    <link href="./style.css" rel="stylesheet" type="text/css">
+</head>
+<body>
+  <h1>Scheme interpreted in JavaScript</h1>
+  <div>
+    Enter S-expression in top and evaluate. Result will appear on the bottom.
+  </div>
+  <input type="textarea" id="input" value="(+ 3 2)">
+  <button onclick="compileInput()">evaluate</button>
+  <input type="text" id="output"></input>
+</body>
+</html>
