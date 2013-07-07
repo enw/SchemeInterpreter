@@ -245,3 +245,11 @@ a {
 .cf {
   zoom:1;
 }
+
+/* Customizations for SchemeInterpreter */
+input {
+    width:100%;
+}
+button {
+    width:100%;
+}
