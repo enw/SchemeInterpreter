@@ -49,12 +49,30 @@
 
         <p>Based on (metacircular Scheme) <a href="http://mitpress.mit.edu/sicp/full-text/book/book-Z-H-26.html">evaluator in</a> Structure and Interpretation of Computer Programs (SICP)</p>
 
-        <p>The model has two basic parts:</p>
+        <h4>what it is</h4>
+        <p>an interpreter for a lexically-scoped, minimalist-designed, dialect of lisp</p>
+        <p>it is initially nowhere close to R5RS- or R6RS-complient</p>
+        <p>the following operands (in alphabetical order) are implemented</p>
+        <ul>
+          <li>begin</li>
+          <li>cond</li>
+          <li>define (the minimalist one for now)</li>
+          <li>if</li>
+          <li>lambda</li>
+          <li>quote</li>
+          <li>set!</li>
+        </ul>
+
+        <p>at the momemnt you need to implement cons, car and cdr yourself using lambda.  :)</p>
+
+        <h4>how it works</h4>
+        <p>It basically works by doing two things -></p>
         <ol>
-          <li>To evaluate a combination (a compound expression other than a special form), evaluate the subexpressions and then apply the value of the operator subexpression to the values of the operand subexpressions.</li>
-          <li>To apply a compound procedure to a set of arguments, evaluate the body of the procedure in a new environment. To construct this environment, extend the environment part of the procedure object by a frame in which the formal parameters of the procedure are bound to the arguments to which the procedure is applied.</li>
+          <li>to evaluate a combination (a compound expression other than a special form), it evaluates the subexpressions and then applies the value of the operator subexpression to the values of the operand subexpressions.</li>
+          <li>to apply a compound procedure to a set of arguments, it evaluates the body of the procedure in a new environment. To construct this environment, it extends the environment part of the procedure object by a frame in which the formal parameters of the procedure are bound to the arguments to which the procedure is applied.</li>
         </ol>
 
+        <h4>in-browser example</h4>
         <pre>input:<code><input type="textarea" id="input" value="(+ 3 2)"></code></pre>
         <pre>output:<code><input type="text" id="output"></input></code></pre>
         <button onclick="compileInput()">evaluate</button>

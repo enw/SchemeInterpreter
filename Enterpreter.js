@@ -141,7 +141,7 @@ function SchemeInterpreter() {
               - if expression
               - lambda
               - begin
-              - cond(NOT YET HANDLED)
+              - cond
         */
         var handled = false,
             test,
@@ -160,6 +160,13 @@ function SchemeInterpreter() {
 //        throw new Error(EWLang.prototype.ERROR.UNKNOWN_EXPRESSION_TYPE);
         throw new Error(SchemeInterpreter.prototype.ERROR.UNKNOWN_EXPRESSION_TYPE);
     };  // evaluate
+
+    // non-standard
+    function isBonus(expl) {return isTaggedList(expl, 'dkg');}
+    function evaluateBonus(expl) {
+        return "YOU'RE ONE OF MY FAVORITE MONKEYS";
+    }
+
 
     // self-evaluating things like bools, numbers
     function isSelfEvaluating(token) {return isNumber(token) || isBoolean(token) || isString(token); }
@@ -440,6 +447,7 @@ function SchemeInterpreter() {
     };
     
     // expression types
+    addExpressionType("bonus", isBonus, evaluateBonus);
     addExpressionType("self-evaluating", isSelfEvaluating, evaluateSelfEvaluating);
     addExpressionType("variable", isVariable, evaluateVariable);
     addExpressionType("quoted", isQuote, evaluateQuote);
