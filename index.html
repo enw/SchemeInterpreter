@@ -6,13 +6,13 @@
 
     <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen" />
     <link rel="stylesheet" type="text/css" href="stylesheets/pygment_trac.css" media="screen" />
-    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print" />
+<!--    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print" /> -->
 
     <title>Scheme Interpreter by enw</title>
 
-    <script src="lib/Environment.js" ></script>
-    <script src="lib/parser.js" ></script>
-    <script src="Enterpreter.js" ></script>
+    <script src="https://rawgithub.com/enw/SchemeInterpreter/master/lib/Environment.js" ></script>
+    <script src="https://rawgithub.com/enw/SchemeInterpreter/master/lib/parser.js" ></script>
+    <script src="https://rawgithub.com/enw/SchemeInterpreter/master/Enterpreter.js" ></script>
     <script>
       // the interpreter
       var Enterpreter = module.exports.SchemeInterpreter;
@@ -78,7 +78,7 @@
           <li>to apply a compound procedure to a set of arguments, it evaluates the body of the procedure in a new environment. To construct this environment, it extends the environment part of the procedure object by a frame in which the formal parameters of the procedure are bound to the arguments to which the procedure is applied.</li>
         </ol>
 
-        <h4>in-browser example</h4>
+        <h4>in-browser example (evaluates each keypress)</h4>
         <script type="text/javascript">
           function onKeyPress (event) {
               compileInput();
@@ -89,7 +89,10 @@
         </textarea></code></pre>
         <pre>output:<code><textarea type="text" rows="4" cols="80" id="output"></textarea></code></pre>
         <button onclick="compileInput()">evaluate</button>
-
+        <script>
+          // evaluate!;
+          compileInput();
+        </script>
       </section>
     </div>
 
