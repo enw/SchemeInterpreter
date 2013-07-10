@@ -20,8 +20,14 @@
       
       function compileInput() {
           var input = document.getElementById("input").value,
+              input = "(begin " + input + ")";
+          try {
               output = e.evaluate(e.parse(input)); 
-          document.getElementById("output").value = output;
+          } catch (err) {
+              output = "ERROR:"+err.message;
+          } finally {
+              document.getElementById("output").value = output;
+          }
       }
     </script>
 
@@ -73,8 +79,15 @@
         </ol>
 
         <h4>in-browser example</h4>
-        <pre>input:<code><input type="textarea" id="input" value="(+ 3 2)"></code></pre>
-        <pre>output:<code><input type="text" id="output"></input></code></pre>
+        <script type="text/javascript">
+          function onKeyPress (event) {
+              compileInput();
+          }
+        </script>
+        <pre>input:<code><textarea type="textarea" rows="4" cols="80" id="input" onkeypress="onKeyPress(event);">
+(+ 3 2)
+        </textarea></code></pre>
+        <pre>output:<code><textarea type="text" rows="4" cols="80" id="output"></textarea></code></pre>
         <button onclick="compileInput()">evaluate</button>
 
       </section>
