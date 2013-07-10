@@ -84,8 +84,8 @@
           }
         </script>
         <pre>input:<code><textarea type="textarea" rows="4" cols="80" id="input" onkeypress="onKeyPress(event);">
-(+ 3 2)
-        </textarea></code></pre>
+(define addFour (lambda (n) (+ 4 n)))
+(addFour 3)</textarea></code></pre>
         <pre>output:<code><textarea type="text" rows="4" cols="80" id="output"></textarea></code></pre>
         <button onclick="compileInput()">evaluate</button>
         <script>
